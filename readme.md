@@ -2,7 +2,9 @@
 
 Boilerplate to setup a micro-service based app
 
-## Architecture
+## Architecture Road Map
+
+List of things to implement along the way
 
 Infra
 
