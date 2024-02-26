@@ -1,0 +1,33 @@
+---
+- name: Reset Kubernetes setup on all nodes
+  hosts: all
+  become: true
+  tasks:
+    - name: Stop and disable kubelet service
+      ansible.builtin.systemd:
+        name: kubelet
+        state: stopped
+        enabled: false
+
+    - name: Run kubeadm reset to clean up the node
+      ansible.builtin.command: kubeadm reset -f
+      changed_when: false
+
+    - name: Remove Kubernetes configuration files
+      ansible.builtin.file:
+        path: "{{ item }}"
+        state: absent
+      loop:
+        - /etc/kubernetes/
+        - /var/lib/etcd/
+        - /var/lib/kubelet/
+        - /etc/cni/net.d/
+        - /var/lib/cni/
+
+    - name: Clean up iptables rules
+      ansible.builtin.command: |
+        iptables -F
+        iptables -X
+        iptables -t nat -F
+        iptables -t mangle -F
+      changed_when: false
