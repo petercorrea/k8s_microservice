@@ -1,5 +1,7 @@
 # Production Node.js Server
 
+Boilerplate to setup a micro-service based app
+
 ## Architecture
 
 Infra
