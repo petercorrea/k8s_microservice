@@ -1,29 +1,33 @@
-// Add this to your imports
+'use strict'
+import jwt from '@fastify/jwt'
 import oauthPlugin from '@fastify/oauth2'
+import type { TypeBoxTypeProvider } from '@fastify/type-provider-typebox'
 import 'dotenv/config'
-import Fastify from 'fastify'
+import fastify, { type FastifyInstance } from 'fastify'
+import routes from './routes/routes.js'
 
-import { type OAuth2Namespace } from '@fastify/oauth2'
-
-declare module 'fastify' {
-  interface FastifyInstance {
-    googleOAuth2: OAuth2Namespace
+// Instantiate w/ logging and type support
+const app: FastifyInstance = fastify({
+  logger: {
+    level: 'trace'
   }
-}
+}).withTypeProvider<TypeBoxTypeProvider>()
 
-const fastify = Fastify({
-  logger: true
+// Oauth and JWT plugins
+await app.register(jwt, {
+  secret: 'supersecret'
 })
 
-await fastify.register(oauthPlugin, {
+await app.register(oauthPlugin.fastifyOauth2, {
   name: 'googleOAuth2',
+  userAgent: 'my custom app (v1.0.0)',
   scope: ['profile', 'email'],
   credentials: {
     client: {
       id: process.env.CLIENT_ID ?? '',
       secret: process.env.CLIENT_SECRET ?? ''
     },
-    auth: oauthPlugin.GOOGLE_CONFIGURATION
+    auth: oauthPlugin.fastifyOauth2.GOOGLE_CONFIGURATION
   },
   // The Url to sign in with
   startRedirectPath: '/login/google',
@@ -31,19 +35,36 @@ await fastify.register(oauthPlugin, {
   callbackUri: `http://localhost:${process.env.PORT}/login/google/callback`
 })
 
-// Add a route to handle the callback
-fastify.get('/login/google/callback', async function (request, reply) {
-  const { token } = await this.googleOAuth2.getAccessTokenFromAuthorizationCodeFlow(request)
-  // if later you need to refresh the token you can use
-  // const { token: newToken } = await this.getNewAccessTokenUsingRefreshToken(token)
-
-  await reply.send({ access_token: token.access_token })
+app.decorate('authenticate', async (request: any, reply: any): Promise<any> => {
+  try {
+    await request.jwtVerify()
+  } catch (err) {
+    reply.send(err)
+  }
 })
 
-try {
-  await fastify.listen({ port: Number(process.env.PORT) ?? 9000 })
-  console.log(`Server listening on ${fastify.server.address()?.port}`)
-} catch (err) {
-  fastify.log.error(err)
-  process.exit(1)
+// Routes
+await app.register(routes)
+
+// Debugging
+// app.addHook('onRequest', async (request, reply) => {
+//   // request body is always undefined
+//   console.log('Request:', request)
+// })
+
+// app.addHook('onSend', async (request, reply, payload) => {
+//   console.log('Body:', request.body)
+//   console.log('Response:', payload)
+// })
+
+// Fire up server
+const start = (): void => {
+  app.listen({ port: Number(process.env.PORT) ?? 9000 }, (err, address) => {
+    if (err != null) {
+      app.log.error(err)
+      process.exit(1)
+    }
+    console.log(`Server listening on ${address}`)
+  })
 }
+start()

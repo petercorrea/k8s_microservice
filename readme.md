@@ -18,17 +18,20 @@ Infra
     - ssl termination
     - Automate the management and issuance of TLS certificates
 
-Application
+Services
 
 - nodejs
   - fastify
   - typescript
   - nodemon
   - RBAC
-  - OAuth, JWT, refresh tokens
+  - OAuth, JWT, refresh tokens, cors
   - husky
 - postgres + prisma
 - redis
+- infisical for secrets mgmt
+- cms
+- i18z
 
 Communication
 
