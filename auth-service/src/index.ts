@@ -28,7 +28,7 @@ const logger = {
   },
 };
 
-const app: FastifyInstance = fastify(logger).withTypeProvider<TypeBoxTypeProvider>()
+export const app: FastifyInstance = fastify(logger).withTypeProvider<TypeBoxTypeProvider>()
 
 // Oauth and JWT plugins
 await app.register(jwt, {
@@ -95,8 +95,14 @@ await app.register(routes)
 // })
 
 // Fire up server
-const start = (): void => {
-  app.listen({ port: Number(process.env.PORT) ?? 9000 }, (err, address) => {
+const start = async (): void => {
+  // Swagger
+  await app.ready()
+  if (process.env.SWAGGER_ENABLED === 'true') {
+    app.swagger()
+  }
+  
+  await app.listen({ port: Number(process.env.PORT) ?? 9000 }, (err, address) => {
     if (err != null) {
       app.log.error(err)
       process.exit(1)
@@ -105,9 +111,3 @@ const start = (): void => {
   })
 }
 start()
-
-// Swagger
-if (process.env.SWAGGER_ENABLED === 'true') {
-  await app.ready()
-  app.swagger()
-}
