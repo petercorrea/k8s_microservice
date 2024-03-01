@@ -4,7 +4,6 @@ import { Person, Response, type PersonType, type ResponseType } from '../types/p
 // Routes
 const routes = async (fastify: FastifyInstance): Promise<void> => {
   fastify.get('/', async (req, res) => {
-    // eslint-disable-next-line @typescript-eslint/return-await
     return 'This is home'
   })
 
@@ -16,7 +15,6 @@ const routes = async (fastify: FastifyInstance): Promise<void> => {
     return 'This is protected'
   })
 
-  // Type Driven
   fastify.post<{
     Body: PersonType
     Reply: ResponseType
@@ -28,7 +26,6 @@ const routes = async (fastify: FastifyInstance): Promise<void> => {
       }
     }
   }, async (req, res) => {
-    // eslint-disable-next-line @typescript-eslint/return-await
     return { ...req.body }
   })
 
@@ -36,9 +33,8 @@ const routes = async (fastify: FastifyInstance): Promise<void> => {
   fastify.get('/login/google/callback', async (request, reply) => {
     // change this to user id
     const { token } = await fastify.googleOAuth2.getAccessTokenFromAuthorizationCodeFlow(request)
-    // return await reply.send({ accessToken: token.access_token })
     const jwt = fastify.jwt.sign({ jwt: token.access_token })
-    return {jwt: jwt}
+    return { jwt: jwt }
   })
 }
 

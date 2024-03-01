@@ -4,16 +4,31 @@ import oauthPlugin from '@fastify/oauth2'
 import fastifySwagger from '@fastify/swagger'
 import fastifySwaggerUi from '@fastify/swagger-ui'
 import type { TypeBoxTypeProvider } from '@fastify/type-provider-typebox'
+import dotenv from 'dotenv'
 import 'dotenv/config'
 import fastify, { type FastifyInstance } from 'fastify'
+import path from 'path'
 import routes from './routes/routes.js'
 
+// Load Configuration
+const envPath = path.resolve(process.cwd(), `.env.${process.env.NODE_ENV}`);
+dotenv.config({ path: envPath });
+const isDev = process.env.NODE_ENV === 'dev';
+
 // Instantiate w/ logging and type support
-const app: FastifyInstance = fastify({
+
+const logger = {
   logger: {
-    level: 'trace'
-  }
-}).withTypeProvider<TypeBoxTypeProvider>()
+    level: isDev ? process.env.LOG_LEVEL : 'info',
+    ...(isDev && {
+      transport: {
+        target: 'pino-pretty',
+      },
+    }),
+  },
+};
+
+const app: FastifyInstance = fastify(logger).withTypeProvider<TypeBoxTypeProvider>()
 
 // Oauth and JWT plugins
 await app.register(jwt, {
@@ -46,22 +61,24 @@ app.decorate('authenticate', async (request: any, reply: any): Promise<any> => {
 })
 
 // Swagger
-await app.register(fastifySwagger)
-await app.register(fastifySwaggerUi, {
-  routePrefix: '/docs',
-  uiConfig: {
-    docExpansion: 'full',
-    deepLinking: false
-  },
-  uiHooks: {
-    onRequest: function (request, reply, next) { next() },
-    preHandler: function (request, reply, next) { next() }
-  },
-  staticCSP: true,
-  transformStaticCSP: (header) => header,
-  transformSpecification: (swaggerObject, request, reply) => { return swaggerObject },
-  transformSpecificationClone: true
-})
+if (process.env.SWAGGER_ENABLED === 'true') {
+  await app.register(fastifySwagger)
+  await app.register(fastifySwaggerUi, {
+    routePrefix: '/docs',
+    uiConfig: {
+      docExpansion: 'full',
+      deepLinking: false
+    },
+    uiHooks: {
+      onRequest: function (request, reply, next) { next() },
+      preHandler: function (request, reply, next) { next() }
+    },
+    staticCSP: true,
+    transformStaticCSP: (header) => header,
+    transformSpecification: (swaggerObject, request, reply) => { return swaggerObject },
+    transformSpecificationClone: true
+  })
+}
 
 // Routes
 await app.register(routes)
@@ -88,5 +105,9 @@ const start = (): void => {
   })
 }
 start()
-await app.ready()
-app.swagger()
+
+// Swagger
+if (process.env.SWAGGER_ENABLED === 'true') {
+  await app.ready()
+  app.swagger()
+}
