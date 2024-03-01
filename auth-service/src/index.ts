@@ -95,7 +95,7 @@ await app.register(routes)
 // })
 
 // Fire up server
-const start = async (): void => {
+const start = async (): Promise<void> => {
   // Swagger
   await app.ready()
   if (process.env.SWAGGER_ENABLED === 'true') {
