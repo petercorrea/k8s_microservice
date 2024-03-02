@@ -15,13 +15,7 @@
     "build": "lerna run build",
     "test": "lerna run test",
     "dev": "lerna run dev --parallel",
-    "start": "lerna run start",
-  },
-  "husky": {
-    "hooks": {
-      "pre-commit": "lerna run --concurrency 1 --stream pre-commit",
-      "commit-msg": "commitlint -E HUSKY_GIT_PARAMS"
-    }
+    "start": "lerna run start"
   },
   "dependencies": {},
   "devDependencies": {
