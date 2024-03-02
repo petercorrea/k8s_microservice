@@ -61,6 +61,9 @@ Documentation
 
 - swagger
 
+HTTPS
+openssl req -nodes -new -x509 -keyout server.key -out server.cert
+
 ## Implementation Schedule
 
 ### Phase 1: Infrastructure Setup
@@ -172,3 +175,5 @@ python3 generate_inventory.py
 ansible-playbook -i ./ansible/inventory.ini ./ansible/setup-k8s.yml --check
 ansible-playbook -i ./ansible/inventory.ini ./ansible/setup-k8s.yml
 ```
+
+minor change to test husky

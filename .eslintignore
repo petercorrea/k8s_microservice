@@ -1,0 +1,9 @@
+node_modules
+ansible
+ignore
+terraform
+scripts
+
+packages/**/dist/**/*
+packages/**/src/tests
+packages/**/node_modules
