@@ -2,6 +2,10 @@
 node_modules/
 jspm_packages/
 
+# Certs
+server.cert
+server.key
+
 # Environment configuration files
 .env
 .env.production

@@ -4,31 +4,45 @@ import oauthPlugin from '@fastify/oauth2'
 import fastifySwagger from '@fastify/swagger'
 import fastifySwaggerUi from '@fastify/swagger-ui'
 import type { TypeBoxTypeProvider } from '@fastify/type-provider-typebox'
+import underPressure from "@fastify/under-pressure"
+import closeWithGrace from 'close-with-grace'
 import dotenv from 'dotenv'
 import 'dotenv/config'
 import fastify, { type FastifyInstance } from 'fastify'
+import fs from "fs"
 import path from 'path'
+import { fileURLToPath } from 'url'
 import routes from './routes/routes.js'
+import { getENV } from './utils/helpers.js'
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 // Load Configuration
-const envPath = path.resolve(process.cwd(), `.env.${process.env.NODE_ENV}`);
+const env = getENV()
+const envPath = path.resolve(process.cwd(), `.env.${env}`);
 dotenv.config({ path: envPath });
-const isDev = process.env.NODE_ENV === 'dev';
+const isDev = env === 'DEV';
 
 // Instantiate w/ logging and type support
-
-const logger = {
-  logger: {
-    level: isDev ? process.env.LOG_LEVEL : 'info',
-    ...(isDev && {
+const options = {
+  http2: true,
+  https: {
+    allowHTTP1: true, // Fallback support for HTTP/1
+    key: fs.readFileSync(path.join(__dirname, '../server.key')),
+    cert: fs.readFileSync(path.join(__dirname, '../server.cert'))
+  },
+  ...(isDev && process.stdout.isTTY && {
+    logger: {
+      level: isDev ? process.env.LOG_LEVEL : 'info',
       transport: {
         target: 'pino-pretty',
       },
-    }),
-  },
+    }
+  }),
 };
 
-export const app: FastifyInstance = fastify(logger).withTypeProvider<TypeBoxTypeProvider>()
+export const app: FastifyInstance = fastify(options).withTypeProvider<TypeBoxTypeProvider>()
 
 // Oauth and JWT plugins
 await app.register(jwt, {
@@ -80,6 +94,13 @@ if (process.env.SWAGGER_ENABLED === 'true') {
   })
 }
 
+app.register(underPressure, {
+  maxEventLoopDelay: 100,
+  maxHeapUsedBytes: 2_147_483_648,
+  maxRssBytes: 2_147_483_648,
+  maxEventLoopUtilization: 0.98
+})
+
 // Routes
 await app.register(routes)
 
@@ -94,7 +115,7 @@ await app.register(routes)
 //   console.log('Response:', payload)
 // })
 
-// Fire up server
+// Only start the server if this file is run directly
 const start = async (): Promise<void> => {
   // Swagger
   await app.ready()
@@ -102,12 +123,27 @@ const start = async (): Promise<void> => {
     app.swagger()
   }
   
-  await app.listen({ port: Number(process.env.PORT) ?? 9000 }, (err, address) => {
+  await app.listen({ port: Number(process.env.PORT) ?? 9000, host: '0.0.0.0' }, (err, address) => {
     if (err != null) {
       app.log.error(err)
       process.exit(1)
     }
+    console.log(`Env: ${getENV()}, PORT: ${process.env.PORT}`)
     console.log(`Server listening on ${address}`)
   })
 }
-start()
+
+if (import.meta.url === `file://${process.argv[1]}`) {
+  start();
+}
+
+closeWithGrace({ delay: 500 }, async function ({ signal, err, manual }) {
+  console.log("Gracefully exiting...")
+  if (err) {
+    console.error(err)
+  }
+  await app.close()
+})
+
+// Export for cluster.js
+export default app;

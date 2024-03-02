@@ -12,5 +12,11 @@ export const Response = Type.Object({
   male: Type.Boolean()
 })
 
+export const StringResponse = Type.Object({
+  hello: Type.String(),
+})
+
 export type PersonType = Static<typeof Person>
 export type ResponseType = Static<typeof Response>
+export type StringResponseType = Static<typeof StringResponse>
+

@@ -1,8 +1,15 @@
 config:
-  target: 'http://localhost:9000'
+  target: 'https://localhost:9000'
+  tls:
+    rejectUnauthorized: false # Only for self-signed certificates
   phases:
-    - duration: 60
-      arrivalRate: 500
+    - duration: 30
+      arrivalRate: 1000
+      rampTo: 100
+      name: "Steady state"
+  http:
+    pipelining: 10
+    maxSockets: 10
 scenarios:
   - flow:
       - get:

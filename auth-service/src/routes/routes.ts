@@ -1,10 +1,17 @@
 import { type FastifyInstance } from 'fastify'
-import { Person, Response, type PersonType, type ResponseType } from '../types/person.js'
+import { Person, PersonType, ResponseType, StringResponse, StringResponseType } from '../types/person.js'
 
 // Routes
 const routes = async (fastify: FastifyInstance): Promise<void> => {
-  fastify.get('/', async (req, res) => {
-    return 'This is home'
+  fastify.get<{ Reply: StringResponseType }>('/', {
+    schema: {
+      response: {
+        200: StringResponse
+      }
+    }
+  }, async (req, res) => {
+   
+    return { hello: 'Hello world!' }
   })
 
   fastify.get('/public', async (req, res) => {

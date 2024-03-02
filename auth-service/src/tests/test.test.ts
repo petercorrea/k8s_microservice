@@ -25,6 +25,7 @@ test('with a running server', async () => {
 })
 
 test('with fetch', async () => {
+  // change this to undici
   const response = await fetch(`http://localhost:9000/`)
   let result = await response.text()
   expect(result).toBe("This is home")
