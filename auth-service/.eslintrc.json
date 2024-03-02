@@ -1,14 +1,53 @@
 {
-    "env": {
-        "browser": true,
-        "es2021": true
-    },
-    "extends": "standard-with-typescript",
-    "parserOptions": {
-        "ecmaVersion": "latest",
-        "sourceType": "module"
-    },
-    "ignorePatterns": ["*", "!src/**/*"],
-    "rules": {
+  "env": {
+    "browser": true,
+    "es2021": true
+  },
+  "extends": ["standard-with-typescript", "plugin:prettier/recommended"],
+  "parserOptions": {
+    "ecmaVersion": "latest",
+    "sourceType": "module"
+  },
+  // "ignorePatterns": ["*", "!src/**/*"],
+  "rules": {
+    "camelcase": "off",
+    "id-match": ["error", "^[a-z]+(_[a-z]+)*$", { "properties": true }]
+  },
+  "overrides": [
+    {
+      "files": ["*.ts", "*.tsx"],
+      "rules": {
+        "id-match": "off",
+        "@typescript-eslint/naming-convention": [
+          "error",
+          {
+            "selector": "variable",
+            "format": ["snake_case"],
+            "types": ["number", "string"],
+            "leadingUnderscore": "allow",
+            "trailingUnderscore": "allow"
+          },
+          {
+            "selector": "variable",
+            "modifiers": ["const"],
+            "types": ["number", "string"],
+            "format": ["UPPER_CASE"],
+            "leadingUnderscore": "allow",
+            "trailingUnderscore": "allow"
+          },
+          {
+            "selector": "variable",
+            "types": ["boolean"],
+            "format": ["PascalCase"],
+            "prefix": ["is", "should", "has", "can", "did", "will"]
+          },
+          {
+            "selector": "typeLike",
+            "format": ["PascalCase"],
+            "prefix": ["I", "C", "T", "S"]
+          }
+        ]
+      }
     }
+  ]
 }
