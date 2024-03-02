@@ -1,0 +1,16 @@
+version: '3.8'
+services:
+  auth:
+    build:
+      context: ./packages/auth
+      dockerfile: Dockerfile
+      args:
+        BASE_IMAGE: lerna-base:latest
+    ports:
+      - "9000:9000"
+    environment:
+      - DEV=true
+    volumes:
+      - ./packages/auth:/usr/src/app
+      - /usr/src/app/node_modules
+    command: npm run dev

@@ -2,32 +2,50 @@
 
 Boilerplate to setup a micro-service based app
 
-## Architecture Road Map
+## Architecture Road Map / Feature Requirements
 
 List of things to implement along the way
 
 Infra
 
-- digital ocean droplets
+- configured to deploy on digital ocean droplets
 - terraform
 - ansible
 - kubernetes
-  - calico
+  - calico with network policies
   - auto scaling
   - traefik ingress
+    - rate limiting
     - ssl termination
-    - Automate the management and issuance of TLS certificates
+    - automate the management and issuance of TLS certificates
 
 Services
 
 - nodejs
+  - http2
   - fastify
-  - typescript
-  - nodemon
-  - RBAC
-  - OAuth, JWT, refresh tokens, cors
-  - husky
-- postgres + prisma
+    - json schema based serialization, runtime type validations, stream support
+    - underpressure
+  - typescript + tsx
+  - OAuth
+  - JWT
+    - issue tokens w/ expirations
+    - validate tokens
+    - blacklist token
+    - refresh tokens
+    - revoke token
+    - decode and validate tokens localy for non-auth services
+    - httponly cookies
+    - scopes
+    - RBAC
+  - cors
+  - rate limiting
+  - husky, prettier, eslint
+  - avoid NODE_ENV
+  - healthchecks
+  - clustering
+  - run as non-root user
+- postgres + prisma / mongo + mongoose
 - redis
 - infisical for secrets mgmt
 - cms
@@ -39,17 +57,17 @@ Communication
 
 CI/CD
 
-- containerizer with docker
+- containerized with docker
 - container registry
 - github actions
-- blue green deploymens
+- blue green deployments
 - staging and prod environments
 
 Testing
 
 - supertest
-- jest
-- benchmarking w/ locust
+- vitest
+- load benchmarking w/ autocannon & artillery
 
 Observability & Monitoring
 
@@ -60,9 +78,7 @@ Observability & Monitoring
 Documentation
 
 - swagger
-
-HTTPS
-openssl req -nodes -new -x509 -keyout server.key -out server.cert
+- openAPI
 
 ## Implementation Schedule
 
@@ -164,6 +180,8 @@ openssl req -nodes -new -x509 -keyout server.key -out server.cert
 
 Configure the anisble control agent to be internal to the network, and update the dynamic inventory script.
 
+#### Helper Scripts
+
 ```bash
 ./scripts/load_ssh.sh
 source ./scripts/load_env.sh
@@ -176,4 +194,9 @@ ansible-playbook -i ./ansible/inventory.ini ./ansible/setup-k8s.yml --check
 ansible-playbook -i ./ansible/inventory.ini ./ansible/setup-k8s.yml
 ```
 
-minor change to test husky
+```
+openssl req -nodes -new -x509 -keyout server.key -out server.cert
+
+docker build -f Dockerfile.base -t lerna-base:latest .
+docker compose -f docker-compose.dev.yml up --build 
+```

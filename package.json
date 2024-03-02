@@ -17,9 +17,7 @@
     "dev": "lerna run dev --parallel",
     "start": "lerna run start"
   },
-  "dependencies": {},
   "devDependencies": {
-    "lerna": "^8.1.2",
     "@commitlint/cli": "^19.0.3",
     "@commitlint/config-conventional": "^19.0.3",
     "@types/jsonwebtoken": "^9.0.5",
@@ -39,6 +37,7 @@
     "fastify-tsconfig": "^2.0.0",
     "husky": "^9.0.11",
     "json-schema-to-typescript": "^13.1.2",
+    "lerna": "^8.1.2",
     "pino-pretty": "^10.3.1",
     "prettier": "^3.2.5",
     "supertest": "^6.3.4",
