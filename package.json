@@ -16,7 +16,6 @@
     "test": "lerna run test",
     "dev": "lerna run dev --parallel",
     "start": "lerna run start",
-    "prepare": "husky"
   },
   "husky": {
     "hooks": {
