@@ -126,7 +126,7 @@ app.decorate('authenticate', async (request: any, reply: any): Promise<any> => {
         .send({ message: 'New tokens' });
     }
     // unknown failure
-    return reply.send({ message: 'Token refresh failed' });
+    return reply.status(401).send({ message: 'Token refresh failed' });
   }
   // valid token, proceed to route logic
 });
