@@ -22,24 +22,16 @@
           "error",
           {
             "selector": "variable",
-            "format": ["snake_case"],
+            "format": ["snake_case", "UPPER_CASE"],
             "types": ["number", "string"],
-            "leadingUnderscore": "allow",
-            "trailingUnderscore": "allow"
-          },
-          {
-            "selector": "variable",
-            "modifiers": ["const"],
-            "types": ["number", "string"],
-            "format": ["UPPER_CASE"],
             "leadingUnderscore": "allow",
             "trailingUnderscore": "allow"
           },
           {
             "selector": "variable",
             "types": ["boolean"],
-            "format": ["PascalCase"],
-            "prefix": ["is", "should", "has", "can", "did", "will"]
+            "format": ["snake_case", "UPPER_CASE"],
+            "prefix": ["is_", "should_", "has_", "can_", "did_", "will_"]
           },
           {
             "selector": "typeLike",

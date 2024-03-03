@@ -25,9 +25,9 @@ if (cluster.isPrimary) {
       process.exit(1);
     }
 
-    const { ENV } = configure_environment();
+    const { env } = configure_environment();
     console.log(`Initializing cluster...`);
-    console.log(`Environment set: ${ENV}`);
+    console.log(`Environment set: ${env}`);
     console.log(`Server listening on ${address}`);
     console.log(`Worker ${process.pid} started`);
   });

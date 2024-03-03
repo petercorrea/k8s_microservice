@@ -16,16 +16,32 @@ export const getENV = (): string | undefined => {
 };
 
 export const configure_environment = (): {
-  ENV: string | undefined;
-  ENV_PATH: string;
+  env: string | undefined;
+  env_path: string;
 } => {
   // Load Configuration
-  const ENV = getENV();
-  const ENV_PATH = path.resolve(process.cwd(), `.env.${ENV}`).toLowerCase();
-  dotenv.config({ path: ENV_PATH });
+  const env = getENV();
+  const env_path = path.resolve(process.cwd(), `.env.${env}`).toLowerCase();
+  dotenv.config({ path: env_path });
 
   return {
-    ENV,
-    ENV_PATH,
+    env,
+    env_path,
   };
+};
+
+export const getUser = async (access_token: string): Promise<any> => {
+  const response = await fetch(
+    'https://www.googleapis.com/oauth2/v2/userinfo',
+    {
+      headers: {
+        Authorization: `Bearer ${access_token}`,
+      },
+    }
+  );
+
+  if (!response.ok) {
+    throw new Error('Failed to fetch user info');
+  }
+  return await response.json();
 };

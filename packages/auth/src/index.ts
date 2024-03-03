@@ -1,5 +1,6 @@
 'use strict';
-import jwt from '@fastify/jwt';
+import cookie from '@fastify/cookie';
+import jwt, { type VerifyPayloadType } from '@fastify/jwt';
 import oauthPlugin from '@fastify/oauth2';
 import fastifySwagger from '@fastify/swagger';
 import fastifySwaggerUi from '@fastify/swagger-ui';
@@ -11,31 +12,41 @@ import fastify, { type FastifyInstance } from 'fastify';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import {
+  AUTH_TOKEN_COOKIE_CONFIG,
+  REFRESH_TOKEN_COOKIE_CONFIG,
+  create_auth_token_config,
+  create_refresh_token_config,
+} from './constants/constants.js';
 import { auth_routes } from './routes/auth.js';
 import { healthchecks_routes } from './routes/healthchecks.js';
 import { protected_routes } from './routes/protected.js';
 import { public_routes } from './routes/public.js';
+import { type IGoogleUserInfo } from './types/auth.js';
 import { configure_environment } from './utils/helpers.js';
 
 // Load Configuration
-const { ENV } = configure_environment();
-const isDev = ENV === 'DEV';
+const { env } = configure_environment();
+const is_dev = env === 'DEV';
 
-// Instantiate w/ logging and type support
+// Err if envs are not set
+if (process.env.COOKIE_SECRET == null || process.env.JWT_SECRET == null) {
+  throw Error('Please configure environment');
+}
+// Instantiate w/ logging, schema validation and type support
 const FILENAME = fileURLToPath(import.meta.url);
 const DIRNAME = path.dirname(FILENAME);
-
-const options = {
+const logging_options = {
   http2: true,
   https: {
     allowHTTP1: true, // Fallback support for HTTP/1
     key: fs.readFileSync(path.join(DIRNAME, '../server.key')),
     cert: fs.readFileSync(path.join(DIRNAME, '../server.cert')),
   },
-  ...(isDev &&
+  ...(is_dev &&
     process.stdout.isTTY && {
       logger: {
-        level: isDev ? process.env.LOG_LEVEL : 'info',
+        level: is_dev ? process.env.LOG_LEVEL : 'info',
         transport: {
           target: 'pino-pretty',
         },
@@ -43,22 +54,81 @@ const options = {
     }),
 };
 
-// Schema validation and types
 export const app: FastifyInstance =
-  fastify(options).withTypeProvider<TypeBoxTypeProvider>();
+  fastify(logging_options).withTypeProvider<TypeBoxTypeProvider>();
+
+// Cookies
+await app.register(cookie, {
+  secret: process.env.COOKIE_SECRET,
+  hook: 'onRequest',
+});
 
 // JWT
 await app.register(jwt, {
-  // TODO: change to env var
-  secret: 'supersecret',
+  secret: process.env.JWT_SECRET,
+  cookie: {
+    cookieName: 'auth_token',
+    signed: true,
+  },
 });
 
+// Token validation
 app.decorate('authenticate', async (request: any, reply: any): Promise<any> => {
   try {
-    await request.jwtVerify();
-  } catch (err) {
-    reply.send(err);
+    // validate auth token
+    const AUTH_TOKEN: string = request.cookies['__Host-auth_token'];
+    // this throws
+    app.jwt.verify(AUTH_TOKEN);
+  } catch (err: any) {
+    // jwt is expired
+    if (err.message.slice(0, 21) === 'The token has expired') {
+      // validate refresh token
+      const REFRESH_TOKEN: string = request.cookies['__Host-refresh_token'];
+      if (REFRESH_TOKEN == null) {
+        return reply.send({ message: 'No refresh token' });
+      }
+      const decoded: VerifyPayloadType & IGoogleUserInfo =
+        app.jwt.verify(REFRESH_TOKEN);
+
+      // get user info
+      const { id, email, given_name, family_name, picture } = decoded;
+
+      // administer new auth token
+      const { config: auth_token_config, expiry: auth_token_expiry } =
+        create_auth_token_config(id, email, given_name, family_name, picture);
+      const ACCESS_TOKEN = await reply.jwtSign(
+        auth_token_config,
+        auth_token_expiry
+      );
+
+      // administer new refresh token
+      const { config: refresh_token_config, expiry: refresh_token_expiry } =
+        create_refresh_token_config(
+          id,
+          email,
+          given_name,
+          family_name,
+          picture
+        );
+      const NEW_REFRESH_TOKEN = await reply.jwtSign(
+        refresh_token_config,
+        refresh_token_expiry
+      );
+
+      // set cookies
+      return reply
+        .setCookie('__Host-auth_token', ACCESS_TOKEN, AUTH_TOKEN_COOKIE_CONFIG)
+        .setCookie(
+          '__Host-refresh_token',
+          NEW_REFRESH_TOKEN,
+          REFRESH_TOKEN_COOKIE_CONFIG
+        )
+        .send({ message: 'New tokens' });
+    }
+    // unknown failure
+    return reply.send({ message: 'Token refresh failed' });
   }
+  // valid token, proceed to route logic
 });
 
 // Oauth
@@ -76,7 +146,7 @@ await app.register(oauthPlugin.fastifyOauth2, {
   // The Url to sign in with
   startRedirectPath: '/login/google',
   // URL to which Google will redirect the user after authentication
-  callbackUri: `http://localhost:${process.env.PORT}/login/google/callback`,
+  callbackUri: `https://localhost:${process.env.PORT}/login/google/callback`,
 });
 
 // Swagger
@@ -89,16 +159,16 @@ if (process.env.SWAGGER_ENABLED === 'true') {
       deepLinking: false,
     },
     uiHooks: {
-      onRequest: function (request, reply, next) {
+      onRequest: function (request: any, reply: any, next: () => void) {
         next();
       },
-      preHandler: function (request, reply, next) {
+      preHandler: function (request: any, reply: any, next: () => void) {
         next();
       },
     },
     staticCSP: true,
-    transformStaticCSP: (header) => header,
-    transformSpecification: (swaggerObject, request, reply) => {
+    transformStaticCSP: (header: any) => header,
+    transformSpecification: (swaggerObject: any, request: any, reply: any) => {
       return swaggerObject;
     },
     transformSpecificationClone: true,
@@ -142,7 +212,7 @@ const start = async (): Promise<void> => {
         process.exit(1);
       }
       console.log(`Initializing instance...`);
-      console.log(`Environment set: ${ENV}`);
+      console.log(`Environment set: ${env}`);
       console.log(`Server listening on ${address}`);
     }
   );
