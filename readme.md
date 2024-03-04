@@ -31,9 +31,8 @@ Services
   - JWT
     - issue tokens w/ expirations
     - validate tokens
-    - blacklist token
+    - blacklist token/revoke token
     - refresh tokens
-    - revoke token
     - decode and validate tokens localy for non-auth services
     - httponly cookies
     - scopes
@@ -48,6 +47,7 @@ Services
 - postgres + prisma / mongo + mongoose
 - redis
 - infisical for secrets mgmt
+  - rotate secrets without disruptions
 - cms
 - i18z
 
@@ -58,6 +58,8 @@ Communication
 CI/CD
 
 - containerized with docker
+  - build layers
+  - live reload w/ mounts
 - container registry
 - github actions
 - blue green deployments
@@ -198,5 +200,8 @@ ansible-playbook -i ./ansible/inventory.ini ./ansible/setup-k8s.yml
 openssl req -nodes -new -x509 -keyout server.key -out server.cert
 
 docker build -f Dockerfile.base -t lerna-base:latest .
-docker compose -f docker-compose.dev.yml up --build 
+
+docker compose -f docker-compose.dev.yml up --build
+
+docker plugin install grafana/loki-docker-driver:latest --alias loki --grant-all-permissions
 ```

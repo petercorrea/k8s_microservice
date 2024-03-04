@@ -7,10 +7,58 @@ services:
       args:
         BASE_IMAGE: lerna-base:latest
     ports:
-      - "9000:9000"
+      - '9000:9000'
     environment:
       - DEV=true
     volumes:
       - ./packages/auth:/usr/src/app
       - /usr/src/app/node_modules
     command: npm run dev
+    logging:
+      driver: loki
+      options:
+        # for mac
+        loki-url: 'http://host.docker.internal:3100/loki/api/v1/push'
+        # for linux
+        # loki-url: 'http://loki:3100/loki/api/v1/push'
+        loki-batch-size: '400'
+        loki-external-labels: container_name=auth,app=myapp
+
+  # logging aggregator
+  loki:
+    image: grafana/loki:latest
+    volumes:
+      - ./loki:/etc/loki
+    ports:
+      - '3100:3100'
+    restart: unless-stopped
+    command: -config.file=/etc/loki/loki-config.yml
+    networks:
+      - loki
+
+  # dashboard
+  grafana:
+    image: grafana/grafana:latest
+    user: '501'
+    ports:
+      - '3000:3000'
+    volumes:
+      - ./grafana:/var/lib/grafana
+    networks:
+      - loki
+
+  # # metrics monitoring
+  # prometheus:
+  #   image: prom/prometheus
+  #   ports:
+  #     - '9090:9090'
+  #   volumes:
+  #     - ./prometheus.yml:/etc/prometheus/prometheus.yml
+  #   depends_on:
+  #     - auth
+# volumes:
+#   elasticsearch-data:
+# grafana-data:
+
+networks:
+  loki:

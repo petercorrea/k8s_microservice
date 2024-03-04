@@ -3,7 +3,7 @@
 //    Note 2: Avoid using "moduleResolution": "NodeNext" in tsconfig.json with "type": "module" in package.json.
 
 {
-  "extends": "../../tsconfig.base.json",
+  "extends": "fastify-tsconfig",
   "compilerOptions": {
     /* Visit https://aka.ms/tsconfig to read more about this file */
 

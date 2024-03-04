@@ -1,10 +1,6 @@
 import { type CookieSerializeOptions } from '@fastify/cookie';
 import { getENV } from '../utils/helpers.js';
 
-export const http_test_agent = {
-  rejectUnauthorized: false,
-};
-
 export const create_auth_token_config = (
   ...values: string[]
 ): { config: object; expiry: object } => {

@@ -4,7 +4,7 @@ import {
   REFRESH_TOKEN_COOKIE_CONFIG,
   create_auth_token_config,
   create_refresh_token_config,
-} from '../constants/constants.js';
+} from '../constants/auth.js';
 import { getUser } from '../utils/helpers.js';
 
 // Routes

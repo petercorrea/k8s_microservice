@@ -1,7 +1,7 @@
 import supertest from 'supertest';
 import type TestAgent from 'supertest/lib/agent.js';
 import { afterAll, beforeAll, test } from 'vitest';
-import { http_test_agent } from '../../constants/constants.js';
+import { http_test_agent } from '../../constants/test.js';
 import { app } from '../../index.js';
 
 let request: TestAgent;

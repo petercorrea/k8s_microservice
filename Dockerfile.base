@@ -1,6 +1,6 @@
 # Dockerfile.base
-FROM node:16-alpine
+FROM node:21-alpine
 WORKDIR /app
-COPY package.json package-lock.json lerna.json ./
+COPY package.json package-lock.json lerna.json tsconfig.base.json ./
 COPY packages packages
 RUN npm install --frozen-lockfile

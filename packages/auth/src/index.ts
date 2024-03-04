@@ -9,6 +9,7 @@ import underPressure from '@fastify/under-pressure';
 import closeWithGrace from 'close-with-grace';
 import 'dotenv/config';
 import fastify, { type FastifyInstance } from 'fastify';
+import fastifyMetrics from 'fastify-metrics';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -17,7 +18,7 @@ import {
   REFRESH_TOKEN_COOKIE_CONFIG,
   create_auth_token_config,
   create_refresh_token_config,
-} from './constants/constants.js';
+} from './constants/auth.js';
 import { auth_routes } from './routes/auth.js';
 import { healthchecks_routes } from './routes/healthchecks.js';
 import { protected_routes } from './routes/protected.js';
@@ -92,6 +93,10 @@ app.decorate('authenticate', async (request: any, reply: any): Promise<any> => {
 
       // get user info
       const { id, email, given_name, family_name, picture } = decoded;
+
+      // TODO: blacklist old tokens
+
+      // use userId to retrieve info from db
 
       // administer new auth token
       const { config: auth_token_config, expiry: auth_token_expiry } =
@@ -174,6 +179,10 @@ if (process.env.SWAGGER_ENABLED === 'true') {
     transformSpecificationClone: true,
   });
 }
+
+// Metrics monitoring
+const options = { endpoint: '/metrics' };
+await app.register(fastifyMetrics.default, options);
 
 // Load configuration
 await app.register(underPressure, {
