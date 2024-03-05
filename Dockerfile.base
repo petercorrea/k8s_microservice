@@ -1,6 +1,8 @@
-# Dockerfile.base
+# Stage 0
 FROM node:21-alpine
+
 WORKDIR /app
+
 COPY package.json package-lock.json lerna.json tsconfig.base.json ./
-COPY packages packages
+
 RUN npm install --frozen-lockfile

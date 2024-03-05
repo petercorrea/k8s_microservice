@@ -133,3 +133,5 @@ override.tf.json
 terraform.rc
 
 grafana/*
+
+mongodb_data/*

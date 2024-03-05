@@ -1,61 +1,25 @@
-# Production Node.js Server
+# Microservice Boilerplate
 
-Boilerplate to setup a micro-service based app
+Boilerplate to setup a microservice based app
 
 ## Architecture Road Map / Feature Requirements
 
 List of things to implement along the way
 
-Infra
+### Infra
 
 - configured to deploy on digital ocean droplets
-- terraform
-- ansible
-- kubernetes
-  - calico with network policies
+- provisioning with terraform
+- configuring with ansible
+- container orchestration with kubernetes
+  - calico for network policies
   - auto scaling
-  - traefik ingress
+  - traefik ingress controller
     - rate limiting
     - ssl termination
     - automate the management and issuance of TLS certificates
 
-Services
-
-- nodejs
-  - http2
-  - fastify
-    - json schema based serialization, runtime type validations, stream support
-    - underpressure
-  - typescript + tsx
-  - OAuth
-  - JWT
-    - issue tokens w/ expirations
-    - validate tokens
-    - blacklist token/revoke token
-    - refresh tokens
-    - decode and validate tokens localy for non-auth services
-    - httponly cookies
-    - scopes
-    - RBAC
-  - cors
-  - rate limiting
-  - husky, prettier, eslint
-  - avoid NODE_ENV
-  - healthchecks
-  - clustering
-  - run as non-root user
-- postgres + prisma / mongo + mongoose
-- redis
-- infisical for secrets mgmt
-  - rotate secrets without disruptions
-- cms
-- i18z
-
-Communication
-
-- rabbitmq
-
-CI/CD
+### CI/CD
 
 - containerized with docker
   - build layers
@@ -65,124 +29,65 @@ CI/CD
 - blue green deployments
 - staging and prod environments
 
-Testing
+### Communication
+
+- rabbitmq
+
+### Microservices
+
+- nodejs runtime
+  - performance
+    - fastify server framework
+      - json schema based serialization, runtime type validations, stream support
+      - underpressure
+    - http2
+    - clustering
+  - security
+    - cors
+    - rate limiting
+    - OAuth
+    - JWT
+      - issue tokens w/ expirations
+      - validate tokens
+      - blacklist token/revoke token
+      - refresh tokens
+      - decode and validate tokens localy for non-auth services
+      - httponly cookies
+      - scopes
+      - RBAC
+  - best practices & ergonomics
+    - husky, prettier, eslint
+    - typescript + tsx
+    - healthchecks
+    - avoid NODE_ENV
+    - run as non-root user
+- postgres + prisma / mongo + mongoose
+- redis
+- infisical for secrets mgmt
+  - rotate secrets without disruptions
+- cms
+- i18z
+
+### Testing
 
 - supertest
 - vitest
 - load benchmarking w/ autocannon & artillery
 
-Observability & Monitoring
+### Observability & Monitoring
 
 - traefik dashboard
 - rabbitmq dashboard
-- ELK + Prometheus and Grafana
+- Loki and Grafana
 
-Documentation
+### Documentation
 
 - swagger
 - openAPI
 
-## Implementation Schedule
+## Helper Scripts & Commands
 
-### Phase 1: Infrastructure Setup
-
-#### Objectives
-
-- Set up the foundational cloud infrastructure on DigitalOcean using Terraform.
-- Configure Kubernetes cluster with Ansible for automation.
-
-#### Tasks
-
-1. **Terraform**: Write Terraform scripts to provision DigitalOcean droplets, network configurations, and any other initial infrastructure components needed.
-2. **Ansible**: Create Ansible playbooks to install Docker, Kubernetes, and set up the Kubernetes cluster on provisioned droplets.
-3. **Cluster Networking**: Deploy Calico for Kubernetes networking.
-
-### Phase 2: Application Development Setup
-
-#### Objectives
-
-- Scaffold the Fastify application.
-- Set up local development environments and repositories.
-
-#### Tasks
-
-1. **Fastify Application**: Initialize a new Node.js project with Fastify for the API server.
-2. **Supabase Integration**: Configure Prisma for interacting with Supabase/PostgreSQL.
-3. **Authentication**: Implement JWT and OAuth mechanisms in Fastify for secure authentication.
-4. **Redis Setup**: Integrate Redis for caching within the application.
-
-### Phase 3: Microservices and Communication
-
-#### Objectives
-
-- Design and implement microservices architecture.
-- Set up RabbitMQ for inter-service communication.
-
-#### Tasks
-
-1. **RabbitMQ**: Deploy RabbitMQ on Kubernetes for asynchronous messaging between services.
-2. **Service Design**: Identify and define the boundaries of your microservices, focusing on separation of concerns.
-
-### Phase 4: CI/CD Pipeline and Deployment
-
-#### Objectives
-
-- Establish CI/CD workflows with GitHub Actions.
-- Implement blue-green deployment strategy.
-
-#### Tasks
-
-1. **Dockerization**: Containerize the Fastify application and any other microservices for deployment.
-2. **Version Control**
-3. **Container Registry**
-4. **GitHub Actions**: Create workflows for automated testing, building, and deploying the application.
-5. **Blue-Green Deployments**: Configure Kubernetes deployments and services to support blue-green deployments for minimal downtime.
-6. **Kubernetes Config**: ConfigMaps and Secrets, and Ingress
-
-### Phase 5: Observability, Monitoring, and Testing
-
-#### Objectives
-
-- Set up monitoring and logging tools.
-- Integrate Locust for load testing.
-
-#### Tasks
-
-1. **Traefik Ingress**: Deploy Traefik as the Ingress controller with SSL termination.
-2. **Monitoring and Logging**: Integrate ELK stack with Prometheus and Grafana for comprehensive monitoring and logging.
-3. **Performance Testing**: Write Locust scripts to test the application under load, focusing on key functionalities.
-
-### Phase 6: Iteration and Optimization
-
-#### Objectives
-
-- Analyze performance testing results.
-- Optimize application performance based on insights.
-
-#### Tasks
-
-1. **Performance Analysis**: Review Locust test results to identify bottlenecks.
-2. **Application Optimization**: Refine application code, database queries, and infrastructure setup to address any performance issues.
-3. **Security and RBAC**: Ensure that the application's security measures are robust, including implementing Role-Based Access Control (RBAC) as planned.
-
-### Phase 7: Final Testing and Deployment
-
-#### Objectives
-
-- Conduct final tests in the staging environment.
-- Deploy the application to production.
-
-#### Tasks
-
-1. **Staging Tests**: Run comprehensive tests in the staging environment, including performance and security assessments.
-2. **Production Deployment**: Use the blue-green strategy to deploy the optimized application to production.
-3. **User Acceptance Testing (UAT)**: Perform UAT to ensure the application meets all requirements and expectations.
-
-#### Future Optimizations
-
-Configure the anisble control agent to be internal to the network, and update the dynamic inventory script.
-
-#### Helper Scripts
+### Terraform & Ansible
 
 ```bash
 ./scripts/load_ssh.sh
@@ -196,12 +101,14 @@ ansible-playbook -i ./ansible/inventory.ini ./ansible/setup-k8s.yml --check
 ansible-playbook -i ./ansible/inventory.ini ./ansible/setup-k8s.yml
 ```
 
+### Self Signing Certs
+
 ```
 openssl req -nodes -new -x509 -keyout server.key -out server.cert
+```
 
-docker build -f Dockerfile.base -t lerna-base:latest .
+### Installing Loki Docker Driver Plugin
 
-docker compose -f docker-compose.dev.yml up --build
-
+```
 docker plugin install grafana/loki-docker-driver:latest --alias loki --grant-all-permissions
 ```

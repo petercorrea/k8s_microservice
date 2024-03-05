@@ -1,5 +1,30 @@
 version: '3.8'
 services:
+  frontend:
+    build:
+      context: ./packages/frontend
+      dockerfile: Dockerfile
+      args:
+        BASE_IMAGE: lerna-base:latest
+    ports:
+      - '3000:3000'
+    environment:
+      - DEV=true
+    volumes:
+      - ./packages/frontend:/app/packages/frontend
+      - /app/packages/frontend/node_modules
+    command: npm run dev
+    logging:
+      driver: loki
+      options:
+        # for mac
+        loki-url: 'http://host.docker.internal:3100/loki/api/v1/push'
+        # for linux
+        # loki-url: 'http://loki:3100/loki/api/v1/push'
+        loki-batch-size: '400'
+        loki-external-labels: container_name=frontend
+    restart: unless-stopped
+
   auth:
     build:
       context: ./packages/auth
@@ -11,8 +36,8 @@ services:
     environment:
       - DEV=true
     volumes:
-      - ./packages/auth:/usr/src/app
-      - /usr/src/app/node_modules
+      - ./packages/auth:/app/packages/auth
+      - /app/pakcages/auth/node_modules
     command: npm run dev
     logging:
       driver: loki
@@ -22,7 +47,8 @@ services:
         # for linux
         # loki-url: 'http://loki:3100/loki/api/v1/push'
         loki-batch-size: '400'
-        loki-external-labels: container_name=auth,app=myapp
+        loki-external-labels: container_name=auth
+    restart: unless-stopped
 
   # logging aggregator
   loki:
@@ -39,9 +65,10 @@ services:
   # dashboard
   grafana:
     image: grafana/grafana:latest
+    # can change on different system
     user: '501'
     ports:
-      - '3000:3000'
+      - '3001:3000'
     volumes:
       - ./grafana:/var/lib/grafana
     networks:
@@ -56,9 +83,19 @@ services:
   #     - ./prometheus.yml:/etc/prometheus/prometheus.yml
   #   depends_on:
   #     - auth
-# volumes:
-#   elasticsearch-data:
-# grafana-data:
+  # volumes:
+  #   elasticsearch-data:
+  # grafana-data:
+
+  mongodb:
+    image: mongo:latest
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: password
+    ports:
+      - '27017:27017'
+    volumes:
+      - ./mongodb_data:/data/db
 
 networks:
   loki:

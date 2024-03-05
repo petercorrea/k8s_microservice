@@ -17,7 +17,7 @@
     "dev": "lerna run dev --parallel",
     "start": "lerna run start",
     "docker:build:base": "docker build -f Dockerfile.base -t lerna-base:latest .",
-    "docker:up": "docker compose -f docker-compose.dev.yml up --build",
+    "docker:up": "npm run docker:build:base && docker compose -f docker-compose.dev.yml up --build",
     "docker:down": "docker compose -f docker-compose.dev.yml down"
   },
   "devDependencies": {
