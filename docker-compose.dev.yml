@@ -85,7 +85,7 @@ services:
     ports:
       - '3001:3000'
     volumes:
-      - ./grafana:/var/lib/grafana
+      - grafana:/var/lib/grafana
     restart: unless-stopped
     networks:
       - loki
@@ -96,7 +96,7 @@ services:
       retries: 3
 
   # presistance
-  mongodb:
+  mongo:
     image: mongo:latest
     environment:
       MONGO_INITDB_ROOT_USERNAME: admin
@@ -104,13 +104,22 @@ services:
     ports:
       - '27017:27017'
     volumes:
-      - mongodb_data:/data/mongodb
+      - mongo:/data/mongodb
     restart: unless-stopped
     healthcheck:
       test: ['CMD', 'mongo', '--eval', "db.runCommand('ping').ok"]
       interval: 30s
       timeout: 10s
       retries: 5
+    logging:
+      driver: loki
+      options:
+        # for mac
+        loki-url: 'http://host.docker.internal:3100/loki/api/v1/push'
+        # for linux
+        # loki-url: 'http://loki:3100/loki/api/v1/push'
+        loki-batch-size: '400'
+        loki-external-labels: container_name=mongo
 
   postgres:
     image: 'postgres:latest'
@@ -121,13 +130,124 @@ services:
       POSTGRES_USER: admin
       POSTGRES_PASSWORD: password
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - postgres:/var/lib/postgresql/data
     restart: unless-stopped
     healthcheck:
       test: ['CMD-SHELL', 'pg_isready -U admin -d postgres']
       interval: 10s
       timeout: 5s
       retries: 5
+    logging:
+      driver: loki
+      options:
+        # for mac
+        loki-url: 'http://host.docker.internal:3100/loki/api/v1/push'
+        # for linux
+        # loki-url: 'http://loki:3100/loki/api/v1/push'
+        loki-batch-size: '400'
+        loki-external-labels: container_name=postgres
+
+  roach_1:
+    image: cockroachdb/cockroach:v23.2.2
+    hostname: roach_1
+    ports:
+      - '26257:26257'
+      - '8080:8080'
+    # command: 'start'
+    command: >
+      start --advertise-addr=roach_1:26357
+      --http-addr=roach_1:8080
+      --listen-addr=roach_1:26357
+      --sql-addr=roach_1:26257
+      --insecure
+      --join=roach_1:26357,roach_2:26357,roach_3:26357
+    volumes:
+      - 'roach_1:/cockroach/cockroach-data'
+    restart: unless-stopped
+    healthcheck:
+      test: ['CMD', 'curl', '-f', 'http://localhost:8080/health?ready=1']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - roach
+    logging:
+      driver: loki
+      options:
+        # for mac
+        loki-url: 'http://host.docker.internal:3100/loki/api/v1/push'
+        # for linux
+        # loki-url: 'http://loki:3100/loki/api/v1/push'
+        loki-batch-size: '400'
+        loki-external-labels: container_name=roach_1
+
+  roach_2:
+    image: cockroachdb/cockroach:v23.2.2
+    hostname: roach_2
+    ports:
+      - '26258:26258'
+      - '8081:8081'
+    command: >
+      start
+      --advertise-addr=roach_2:26357
+      --http-addr=roach_2:8081
+      --listen-addr=roach_2:26357
+      --sql-addr=roach_2:26258
+      --insecure
+      --join=roach_2:26357,roach_2:26357,roach_3:26357
+    volumes:
+      - 'roach_2:/cockroach/cockroach-data'
+    restart: unless-stopped
+    healthcheck:
+      test: ['CMD', 'curl', '-f', 'http://localhost:8081/health?ready=1']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - roach
+    logging:
+      driver: loki
+      options:
+        # for mac
+        loki-url: 'http://host.docker.internal:3100/loki/api/v1/push'
+        # for linux
+        # loki-url: 'http://loki:3100/loki/api/v1/push'
+        loki-batch-size: '400'
+        loki-external-labels: container_name=roach_2
+
+  roach_3:
+    image: cockroachdb/cockroach:v23.2.2
+    hostname: roach_3
+    ports:
+      - '26259:26259'
+      - '8082:8082'
+    command: >
+      start
+      --advertise-addr=roach_3:26357
+      --http-addr=roach_3:8082
+      --listen-addr=roach_3:26357
+      --sql-addr=roach_3:26259
+      --insecure
+      --join=roach_1:26357,roach_2:26357,roach_3:26357
+    volumes:
+      - 'roach_3:/cockroach/cockroach-data'
+    restart: unless-stopped
+    healthcheck:
+      test: ['CMD', 'curl', '-f', 'http://localhost:8082/health?ready=1']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - roach
+    logging:
+      driver: loki
+      options:
+        # for mac
+        loki-url: 'http://host.docker.internal:3100/loki/api/v1/push'
+        # for linux
+        # loki-url: 'http://loki:3100/loki/api/v1/push'
+        loki-batch-size: '400'
+        loki-external-labels: container_name=roach_3
 
   # messagebroker
   rabbitmq:
@@ -139,13 +259,22 @@ services:
       RABBITMQ_DEFAULT_USER: admin
       RABBITMQ_DEFAULT_PASS: password
     volumes:
-      - rabbitmq_data:/var/lib/rabbitmq
+      - rabbitmq:/var/lib/rabbitmq
     restart: unless-stopped
     healthcheck:
       test: ['CMD-SHELL', 'rabbitmqctl status']
       interval: 30s
       timeout: 30s
       retries: 3
+    logging:
+      driver: loki
+      options:
+        # for mac
+        loki-url: 'http://host.docker.internal:3100/loki/api/v1/push'
+        # for linux
+        # loki-url: 'http://loki:3100/loki/api/v1/push'
+        loki-batch-size: '400'
+        loki-external-labels: container_name=rabbitmq
 
   # caching
   redis:
@@ -153,23 +282,41 @@ services:
     ports:
       - '6379:6379'
     volumes:
-      - redis_data:/data/redis
+      - redis:/data/redis
     restart: unless-stopped
     healthcheck:
       test: ['CMD', 'redis-cli', 'ping']
       interval: 10s
       timeout: 5s
       retries: 3
+    logging:
+      driver: loki
+      options:
+        # for mac
+        loki-url: 'http://host.docker.internal:3100/loki/api/v1/push'
+        # for linux
+        # loki-url: 'http://loki:3100/loki/api/v1/push'
+        loki-batch-size: '400'
+        loki-external-labels: container_name=redis
 
 volumes:
-  mongodb_data:
-    name: mongodb_data
-  postgres_data:
-    name: postgres_data
-  rabbitmq_data:
-    name: rabbitmq_data
-  redis_data:
-    name: redis_data
+  grafana:
+    name: grafana
+  mongo:
+    name: mongo
+  postgres:
+    name: postgres
+  rabbitmq:
+    name: rabbitmq
+  redis:
+    name: redis
+  roach_1:
+    name: roach_1
+  roach_2:
+    name: roach_2
+  roach_3:
+    name: roach_3
 
 networks:
   loki:
+  roach:

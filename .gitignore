@@ -131,7 +131,5 @@ override.tf.json
 # Ignore CLI configuration files
 .terraformrc
 terraform.rc
-
-grafana/*
-
-mongodb_data/*
+system_design.yaml
+todo.md
