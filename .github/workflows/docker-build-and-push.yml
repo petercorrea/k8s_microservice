@@ -24,9 +24,6 @@ jobs:
       - name: Install Lerna
         run: npm install --global lerna
 
-      - name: Bootstrap the project
-        run: lerna bootstrap
-
       - name: Build the Docker image for the changed packages
         run: |
           if lerna changed --since origin/main --include-merged-tags | grep -q "${{ matrix.package }}"; then
