@@ -1,6 +1,8 @@
 # make sure to source env vars first 
-# source load_env.sh
-# terraform apply -var-file="staging.tfvars"
+# source ../scripts/load_env.sh
+# terraform <CMD> -var-file="staging.tfvars"
+
+# if using bash alias, make use ips are updated
 
 terraform {
   required_providers {
@@ -16,7 +18,7 @@ provider "digitalocean" {
 }
 
 resource "digitalocean_ssh_key" "terraform_key" {
-  name       = "terraform SSH Key"
+  name       = "terraform_key"
   public_key = file("~/.ssh/id_rsa.pub")
 }
 
