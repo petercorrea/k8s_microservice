@@ -36,4 +36,4 @@ jobs:
         with:
           context: ./packages/${{ matrix.package }}
           push: true
-          tags: ${{ secrets.DOCKER_HUB_USERNAME }}/${{ matrix.package }}:staging::latest
+          tags: ${{ secrets.DOCKER_HUB_USERNAME }}/${{ matrix.package }}-staging:latest
