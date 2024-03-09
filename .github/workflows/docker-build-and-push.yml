@@ -30,7 +30,7 @@ jobs:
       - name: Build the Docker image for the changed packages
         run: |
           if lerna changed --since origin/main --include-merged-tags | grep -q "${{ matrix.package }}"; then
-            docker build -t ${{ secrets.DOCKER_HUB_USERNAME }}/${{ matrix.package }}:latest ./${{ matrix.package }}
+            docker build -t ${{ secrets.DOCKER_HUB_USERNAME }}/${{ matrix.package }}:latest ./packages/${{ matrix.package }}
           fi
 
       - name: Log in to Docker Hub
