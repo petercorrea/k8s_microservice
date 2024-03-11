@@ -1,0 +1,113 @@
+- name: Configure traefik proxy
+  hosts: proxy
+  become: true
+  vars:
+    arch_mapping:  # Map ansible architecture {{ ansible_architecture }} names to Docker's architecture names
+      x86_64: amd64
+      aarch64: arm64
+    docker_apt_gpg_key: https://download.docker.com/linux/ubuntu/gpg
+    docker_apt_repo: "deb [arch=amd64] https://download.docker.com/linux/ubuntu {{ ansible_distribution_release }} stable"
+  handlers:
+    - name: Restart containerd
+      ansible.builtin.systemd:
+        name: containerd
+        state: restarted
+  tasks:
+    - name: Update APT package index
+      ansible.builtin.apt:
+        update_cache: true
+
+    - name: Install required packages
+      ansible.builtin.apt:
+        pkg:
+          - apt-transport-https
+          - ca-certificates
+          - curl
+          - gnupg
+          - software-properties-common
+
+    - name: Create directory for Docker's GPG key
+      ansible.builtin.file:
+        path: /etc/apt/keyrings
+        state: directory
+        mode: '0755'
+
+    - name: Add Docker's official GPG key
+      ansible.builtin.apt_key:
+        url: https://download.docker.com/linux/ubuntu/gpg
+        keyring: /etc/apt/keyrings/docker.gpg
+        state: present
+
+    - name: Print architecture variables
+      ansible.builtin.debug:
+        msg: "Architecture: {{ ansible_architecture }}, Codename: {{ ansible_lsb.codename }}"
+
+    - name: Print architecture variables
+      ansible.builtin.debug:
+        msg: "deb [arch={{ arch_mapping[ansible_architecture] | default(ansible_architecture) }}
+          signed-by=/etc/apt/keyrings/docker.gpg]
+          https://download.docker.com/linux/ubuntu {{ ansible_lsb.codename }} stable"
+
+    - name: Add Docker repository
+      ansible.builtin.apt_repository:
+        repo: >-
+          deb [arch={{ arch_mapping[ansible_architecture] | default(ansible_architecture) }}
+          signed-by=/etc/apt/keyrings/docker.gpg]
+          https://download.docker.com/linux/ubuntu {{ ansible_lsb.codename }} stable
+        filename: docker
+        state: present
+
+    - name: Update the apt package index (again)
+      ansible.builtin.apt:
+        update_cache: true
+
+    - name: Install Docker and related packages
+      ansible.builtin.apt:
+        name: "{{ item }}"
+        state: present
+        update_cache: true
+      loop:
+        - docker-ce
+        - docker-ce-cli
+        - containerd.io
+        - docker-buildx-plugin
+        - docker-compose-plugin
+
+    - name: Install Grafana Loki Docker Driver plugin
+      community.docker.docker_plugin:
+        plugin_name: grafana/loki-docker-driver:latest
+        alias: loki
+        state: present
+
+    - name: Add Docker group
+      ansible.builtin.group:
+        name: docker
+        state: present
+
+    - name: Add user to Docker group
+      ansible.builtin.user:
+        name: "{{ ansible_user }}"
+        groups: docker
+        append: true
+
+    - name: Enable and start Docker services
+      ansible.builtin.systemd:
+        name: "{{ item }}"
+        enabled: true
+        state: started
+      loop:
+        - docker.service
+        - containerd.service
+
+    - name: Copy Docker Compose file to remote host
+      ansible.builtin.copy:
+        src: ../proxy/
+        dest: ~/proxy/
+
+    - name: Build and run Docker Compose project on remote host
+      ansible.builtin.shell:
+        cmd: docker compose -f docker-compose.yaml up -d --build
+      become: yes
+      args:
+        chdir: ~/proxy/
+

@@ -1,0 +1,13 @@
+apiVersion: traefik.containo.us/v1alpha1
+kind: IngressRoute
+metadata:
+  name: go-microservice
+spec:
+  entryPoints:
+    - web
+  routes:
+  - match: Host(`myservice.local`) && PathPrefix(`/`)
+    kind: Rule
+    services:
+    - name: go-microservice
+      port: 8080

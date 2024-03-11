@@ -2,6 +2,10 @@
 
 Boilerplate to setup a microservice based app
 
+## Status
+
+In progress.
+
 ## Build Steps
 
 1. Build Docker base image `npm run docker:build:base`
@@ -9,18 +13,29 @@ Boilerplate to setup a microservice based app
 
 ## Deployment Steps
 
-1. Generate ssh keys
-2. Install and configure terraform and ansible
-3. Run terraform steps
-   1. Initalize terraform `terraform init`
-   2. Source env variables `source ../scripts/load_env.sh`
-   3. Terraform plan and apply `terraform <CMD> -var-file="staging.tfvars"`
-4. Run ansible steps
-   1. Generate inventory `python3 generate_inventory.py`
-   2. Run playbook `ansible-playbook -i ./ansible/inventory.ini ./ansible/setup-k8s.yml`
-5. Log into vm
-   1. Run `./scripts/load_ssh`
-   2. Run `ssh root@<IP>`
+1. Install and configure python, terraform and ansible
+2. Generate ssh keys for DO
+   1. Generate ssh keys locally
+3. Run scripts from project root directory
+   1. Source ssh keys and env variables `source ./scripts/load_ssh.sh && source ./scripts/load_env.sh`
+4. Run terraform steps
+   1. cd into terraform `cd terraform`
+   2. Initalize terraform `terraform init`
+   3. Terraform plan and apply
+      1. `terraform plan -var-file="staging.tfvars"`
+      2. `terraform apply -var-file="staging.tfvars"`
+5. Run ansible steps
+
+   1. cd into ansible `cd ../ansible`
+   2. Generate inventory `python generate_inventory.py`
+   3. Run playbooks
+      1. `ansible-playbook -i ./inventory.ini ./setup-k8s.yml`
+      2. `ansible-playbook -i ./inventory.ini ./setup-proxy.yml`
+
+6. Log into vm
+   1. Run `ssh root@<IP>`
+7. Install CRD definitions
+   1. `kubectl apply -f https://raw.githubusercontent.com/traefik/traefik/v2.11/docs/content/reference/dynamic-configuration/kubernetes-crd-definition-v1.yml`
 
 ## Non-Functional Features
 
@@ -95,25 +110,3 @@ Boilerplate to setup a microservice based app
   - [ ] Report users.
   - [ ] Role-Based Access Control (RBAC) / scopes.
 - [ ] Good web security practices (security headers, CSP, secure cookies).
-
-## Functional Features
-
-### Stories Feature
-
-- [ ] Enable users to watch content on the home feed.
-- [ ] Allow users to upload content, including photos, videos, audio, and posts.
-
-### Discovery Feature
-
-- [ ] Implement a **person recommendation** system to suggest connections.
-
-### Audio Rooms
-
-- [ ] Develop **persistent rooms** for ongoing discussions.
-- [ ] Implement **ephemeral rooms** for temporary gatherings.
-
-### Chat Functionality
-
-- [ ] Implement a **global chat** feature for all users.
-- [ ] Create a **nearby chat** feature to connect local users.
-- [ ] Develop **private chat** capabilities for one-on-one conversations.

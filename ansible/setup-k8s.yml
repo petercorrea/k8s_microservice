@@ -1,6 +1,6 @@
 ---
 - name: Setup k8s nodes
-  hosts: all
+  hosts: master:workers
   become: true
   vars:
     arch_mapping:  # Map ansible architecture {{ ansible_architecture }} names to Docker's architecture names
@@ -74,6 +74,12 @@
         - docker-buildx-plugin
         - docker-compose-plugin
 
+    - name: Install Grafana Loki Docker Driver plugin
+      community.docker.docker_plugin:
+        plugin_name: grafana/loki-docker-driver:latest
+        alias: loki
+        state: present
+
     - name: Add Docker group
       ansible.builtin.group:
         name: docker
@@ -94,14 +100,14 @@
         - docker.service
         - containerd.service
 
-    - name: Add Kubernetes’ official GPG key
-      ansible.builtin.apt_key:
-        url: https://packages.cloud.google.com/apt/doc/apt-key.gpg
-        state: present
+    - name: Download and add Kubernetes’ official GPG key
+      ansible.builtin.shell:
+        cmd: |
+          curl -fsSL https://pkgs.k8s.io/core:/stable:/v1.28/deb/Release.key | gpg --dearmor -o /etc/apt/keyrings/kubernetes-apt-keyring.gpg
 
     - name: Add Kubernetes APT repository
       ansible.builtin.apt_repository:
-        repo: deb https://apt.kubernetes.io/ kubernetes-xenial main
+        repo: deb [signed-by=/etc/apt/keyrings/kubernetes-apt-keyring.gpg] https://pkgs.k8s.io/core:/stable:/v1.28/deb/ /
         state: present
 
     - name: Install kubelet, kubeadm and kubectl
