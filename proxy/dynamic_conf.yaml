@@ -1,0 +1,13 @@
+http:
+  routers:
+    my-service-router:
+      rule: 'Host(`staging.stackheap.io`)'
+      service: 'traefik'
+      entryPoints:
+        - 'web'
+  services:
+    traefik:
+      loadBalancer:
+        servers:
+          - url: 'http://159.223.160.104:30080'
+          - url: 'http://24.199.80.109:30080'

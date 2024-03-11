@@ -1,0 +1,13 @@
+http:
+  routers:
+    my-service-router:
+      rule: "Host(`staging.stackheap.io`)"
+      service: "echo-service"
+      entryPoints:
+        - "web"
+  services:
+    echo-service:
+      loadBalancer:
+        servers:
+          - url: "http://64.225.57.30:31396"
+          - url: "http://64.225.61.100:31396"

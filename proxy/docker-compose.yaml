@@ -1,0 +1,16 @@
+version: '3'
+
+services:
+  traefik:
+    image: traefik:v2.4
+    command:
+      - '--log.level=DEBUG'
+      - '--api.insecure=true'
+      - '--providers.docker=false'
+      - '--providers.file.filename=/etc/traefik/dynamic_conf.yaml'
+      - '--entrypoints.web.address=:80'
+    ports:
+      - '80:80'
+      - '8080:8080'
+    volumes:
+      - './:/etc/traefik/'

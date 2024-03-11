@@ -133,3 +133,5 @@ override.tf.json
 terraform.rc
 system_design.yaml
 todo.md
+ignore
+ignore/*
