@@ -17,5 +17,5 @@ jobs:
           prefix_case_sensitive: true # title prefix are case insensitive
           allow_edit: true # Allow the action to edit PR title to match the format
           min_length: 5 # Min length of the title
-          max_length: 20 # Max length of the title
+          max_length: 50 # Max length of the title
           github_token: ${{ secrets.GITHUB_TOKEN }}
