@@ -25,17 +25,16 @@ In progress.
       1. `terraform plan -var-file="staging.tfvars"`
       2. `terraform apply -var-file="staging.tfvars"`
 5. Run ansible steps
-
    1. cd into ansible `cd ../ansible`
    2. Generate inventory `python generate_inventory.py`
    3. Run playbooks
       1. `ansible-playbook -i ./inventory.ini ./setup-k8s.yml`
       2. `ansible-playbook -i ./inventory.ini ./setup-proxy.yml`
-
-6. Log into vm
+         1. Make sure `proxy/dynamic_conf.yaml` has the current traefik nodes
+6. Log into master node
    1. Run `ssh root@<IP>`
-7. Install CRD definitions
-   1. `kubectl apply -f https://raw.githubusercontent.com/traefik/traefik/v2.11/docs/content/reference/dynamic-configuration/kubernetes-crd-definition-v1.yml`
+   2. Install CRD definitions
+      1. `kubectl apply -f https://raw.githubusercontent.com/traefik/traefik/v2.11/docs/content/reference/dynamic-configuration/kubernetes-crd-definition-v1.yml`
 
 ## Non-Functional Features
 

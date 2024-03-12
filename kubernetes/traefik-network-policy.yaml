@@ -2,15 +2,20 @@ apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
   name: traefik-internal-and-proxy-only
-  namespace: kube-system
+  namespace: default
 spec:
   podSelector:
     matchLabels:
       app: traefik
   policyTypes:
     - Ingress
+    - Egress
   ingress:
     - from:
         - ipBlock:
-            cidr: 64.225.24.43/32 # Proxy's IP address
+            cidr: 157.245.92.95/32 # Proxy's IP address
+    - from:
         - namespaceSelector: {} # Allows all internal traffic
+  egress:
+    - to:
+        - namespaceSelector: {} # Allows traffic to all internal namespaces
