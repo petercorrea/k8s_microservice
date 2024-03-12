@@ -12,10 +12,9 @@ jobs:
         uses: deepakputhraya/action-pr-title@v1.0.2
         with:
           # regex: '^\[PROJ-\d+\] .+' # Example regex for title format
-          allowed_prefixes: 'FEAT,FIX,HOTFIX,JIRA,DOC,PROJ-' # title should start with the given prefix
-          disallowed_prefixes: 'feat/,hotfix' # title should not start with the given prefix
-          prefix_case_sensitive: true # title prefix are case insensitive
-          allow_edit: true # Allow the action to edit PR title to match the format
+          allowed_prefixes: 'feat,fix,hotfix,jira,doc,test,proj-' # title should start with the given prefix
+          # disallowed_prefixes: 'feat/,hotfix' # title should not start with the given prefix
+          prefix_case_sensitive: false # title prefix are case insensitive
           min_length: 5 # Min length of the title
           max_length: 50 # Max length of the title
           github_token: ${{ secrets.GITHUB_TOKEN }}
