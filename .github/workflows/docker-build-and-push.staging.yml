@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        package: [auth, frontend] # keep up to date
+        package: [auth, frontend, hello-from-pod] # keep up to date
 
     steps:
       - name: Check out the code
