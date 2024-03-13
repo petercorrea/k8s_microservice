@@ -1,4 +1,4 @@
-# Pull Request Template
+# PR Title
 
 ## Description
 

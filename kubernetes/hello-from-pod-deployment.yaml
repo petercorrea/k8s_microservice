@@ -1,0 +1,28 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: hello-from-pod
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: hello-from-pod
+  template:
+    metadata:
+      labels:
+        app: hello-from-pod
+    spec:
+      containers:
+        - name: hello-from-pod
+          image: hello-from-pod:latest
+          ports:
+            - containerPort: 3000
+          env:
+            - name: POD_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.podIP
+            - name: NODE_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.hostIP

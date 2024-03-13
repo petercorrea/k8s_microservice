@@ -1,0 +1,16 @@
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: hello-from-pod-ingressroute
+  namespace: default
+spec:
+  entryPoints:
+    - web
+  routes:
+    - match: PathPrefix(`/hello`)
+      # match: Host(`staging.stackheap.io`) && PathPrefix(`/echo`)
+      # - match: Host(`echo.local`) && PathPrefix(`/echo`)
+      kind: Rule
+      services:
+        - name: hello-from-pod-service
+          port: 80
