@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
         - name: hello-from-pod
-          image: pmcorrea/hello-from-pod:latest
+          image: pmcorrea/hello-from-pod-staging:latest
           ports:
             - containerPort: 3000
           env:
