@@ -8,7 +8,7 @@ spec:
     - web
   routes:
     - match: PathPrefix(`/hello`)
-      # match: Host(`staging.stackheap.io`) && PathPrefix(`/echo`)
+      # - match: Host(`staging.stackheap.io`) && PathPrefix(`/echo`)
       # - match: Host(`echo.local`) && PathPrefix(`/echo`)
       kind: Rule
       services:
