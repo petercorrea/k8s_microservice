@@ -1,7 +1,7 @@
 # Stage 1
 ARG BASE_IMAGE=node:21-alpine
 
-FROM $BASE_IMAGE as builder
+FROM pmcorrea/builder:latest as builder
 
 WORKDIR /app/packages/auth
 

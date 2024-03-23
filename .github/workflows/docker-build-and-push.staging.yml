@@ -33,6 +33,12 @@ jobs:
           username: ${{ secrets.DOCKER_HUB_USERNAME }}
           password: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
 
+      - name: Build the Builder Image
+        run: |
+          docker build -t pmcorrea/builder:latest -f ./Dockerfile.base .
+        env:
+          DOCKER_BUILDKIT: 1
+
       - name: Build and push Docker images
         run: |
           export TAG=staging-${{ github.sha }}
