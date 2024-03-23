@@ -13,6 +13,8 @@ RUN chmod -R 777 /app/packages/frontend
 
 RUN npm install
 
+RUN npm run build
+
 USER docker
 
 CMD ["npm", "run", "start"]
