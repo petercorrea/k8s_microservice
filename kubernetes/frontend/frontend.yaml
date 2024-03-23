@@ -14,7 +14,8 @@ spec:
     spec:
       containers:
         - name: frontend
-          image: pmcorrea/frontend:latest
+          image: pmcorrea/frontend:staging
+          imagePullPolicy: Always
           ports:
             - containerPort: 3000
 
@@ -25,7 +26,7 @@ metadata:
   name: frontend
 spec:
   ports:
-    - port: 3000
+    - port: 80
       targetPort: 3000
   selector:
     app: frontend
@@ -43,4 +44,4 @@ spec:
       kind: Rule
       services:
         - name: frontend
-          port: 3000
+          port: 80

@@ -15,4 +15,4 @@ RUN npm install
 
 USER docker
 
-CMD ["npm", "run", "dev"]
+CMD ["npm", "run", "start"]
