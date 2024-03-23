@@ -7,6 +7,7 @@ services:
       dockerfile: Dockerfile
       args:
         BASE_IMAGE: lerna-base:latest
+    # image: pmcorrea/frontend:staging-${{ github.sha }}
     ports:
       - '3000:3000'
     environment:
@@ -19,9 +20,9 @@ services:
       driver: loki
       options:
         # for mac
-        loki-url: 'http://host.docker.internal:3100/loki/api/v1/push'
+        # loki-url: 'http://host.docker.internal:3100/loki/api/v1/push'
         # for linux
-        # loki-url: 'http://loki:3100/loki/api/v1/push'
+        loki-url: 'http://loki:3100/loki/api/v1/push'
         loki-batch-size: '400'
         loki-external-labels: container_name=frontend
     restart: unless-stopped
@@ -37,6 +38,7 @@ services:
       dockerfile: Dockerfile
       args:
         BASE_IMAGE: lerna-base:latest
+    # image: pmcorrea/auth:staging-${{ github.sha }}
     ports:
       - '9000:9000'
     environment:
@@ -49,14 +51,45 @@ services:
       driver: loki
       options:
         # for mac
-        loki-url: 'http://host.docker.internal:3100/loki/api/v1/push'
+        # loki-url: 'http://host.docker.internal:3100/loki/api/v1/push'
         # for linux
-        # loki-url: 'http://loki:3100/loki/api/v1/push'
+        loki-url: 'http://loki:3100/loki/api/v1/push'
         loki-batch-size: '400'
         loki-external-labels: container_name=auth
     restart: unless-stopped
     healthcheck:
       test: ['CMD', 'curl', '-f', 'http://localhost:9000/']
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
+  hello:
+    build:
+      context: ./packages/hello-from-pod
+      dockerfile: Dockerfile
+      args:
+        BASE_IMAGE: lerna-base:latest
+    # image: pmcorrea/hello-from-pod:staging-${{ github.sha }}
+    ports:
+      - '3000:3000'
+    environment:
+      - DEV=true
+    volumes:
+      - ./packages/hello-from-pod:/app/packages/hello-from-pod
+      - /app/packages/hello-from-pod/node_modules
+    command: npm run dev
+    logging:
+      driver: loki
+      options:
+        # for mac
+        # loki-url: 'http://host.docker.internal:3100/loki/api/v1/push'
+        # for linux
+        loki-url: 'http://loki:3100/loki/api/v1/push'
+        loki-batch-size: '400'
+        loki-external-labels: container_name=hello
+    restart: unless-stopped
+    healthcheck:
+      test: ['CMD', 'curl', '-f', 'http://localhost:3000/']
       interval: 30s
       timeout: 5s
       retries: 3
