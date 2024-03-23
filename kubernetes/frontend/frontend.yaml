@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
         - name: frontend
-          image: pmcorrea/my-frontend:latest
+          image: pmcorrea/frontend:latest
           ports:
             - containerPort: 3000
 
@@ -39,7 +39,7 @@ spec:
   entryPoints:
     - web
   routes:
-    - match: Host(`myservice.local`) && PathPrefix(`/frontend`)
+    - match: Host(`staging.stackheap.io`) && PathPrefix(`/frontend`)
       kind: Rule
       services:
         - name: frontend

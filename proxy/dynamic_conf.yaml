@@ -1,6 +1,6 @@
 http:
   routers:
-    my-service-router:
+    proxy-router:
       rule: 'Host(`staging.stackheap.io`)'
       service: 'traefik'
       entryPoints:

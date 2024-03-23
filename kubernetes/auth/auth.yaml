@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
         - name: auth
-          image: pmcorrea/my-auth:latest
+          image: pmcorrea/auth:latest
           ports:
             - containerPort: 3000
 
@@ -39,7 +39,7 @@ spec:
   entryPoints:
     - web
   routes:
-    - match: Host(`myservice.local`) && PathPrefix(`/auth`)
+    - match: Host(`staging.stackheap.io`) && PathPrefix(`/auth`)
       kind: Rule
       services:
         - name: auth
