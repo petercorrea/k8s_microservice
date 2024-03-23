@@ -7,8 +7,12 @@ WORKDIR /app/packages/frontend
 
 RUN addgroup -S dockergroup && adduser -S docker -G dockergroup
 
-COPY --chown=docker:dockergroup . ./
+COPY --chown=docker:dockergroup . .
+
+RUN chmod -R 777 /app/packages/frontend
 
 RUN npm install
 
 USER docker
+
+CMD ["npm", "run", "dev"]
