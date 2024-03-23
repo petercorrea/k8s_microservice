@@ -42,7 +42,7 @@ jobs:
 
       - name: Build and push Docker images
         run: |
-          export TAG=latest
+          export TAG=staging
           # export TAG=${{ github.sha }}
           echo "TAG=${TAG}" > .env
           docker-compose -f docker-compose.staging.yml build
