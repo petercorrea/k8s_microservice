@@ -16,8 +16,8 @@ In progress.
 1. Install and configure python, terraform and ansible
 2. Generate ssh keys for DO
    1. Generate ssh keys locally
-3. Run scripts from project root directory
-   1. Source ssh keys and env variables `source ./scripts/load_ssh.sh && source ./scripts/load_env.sh`
+3. Run source script
+   1. `source ./scripts/source.sh`
 4. Run terraform steps
    1. cd into terraform `cd terraform`
    2. Initalize terraform `terraform init`
@@ -27,14 +27,15 @@ In progress.
 5. Run ansible steps
    1. cd into ansible `cd ../ansible`
    2. Generate inventory `python generate_inventory.py`
+      1. Update DNS to point to proxy
+      2. Update `proxy/dynamic_conf.yaml` to point to nodes
+      3. Update network policy manifests to point to proxy
+      4. Add ssh public keys to known hosts
    3. Run playbooks
       1. `ansible-playbook -i ./inventory.ini ./setup-k8s.yml`
       2. `ansible-playbook -i ./inventory.ini ./setup-proxy.yml`
-         1. Make sure `proxy/dynamic_conf.yaml` has the current traefik nodes
 6. Log into master node
    1. Run `ssh root@<IP>`
-   2. Install CRD definitions
-      1. `kubectl apply -f https://raw.githubusercontent.com/traefik/traefik/v2.11/docs/content/reference/dynamic-configuration/kubernetes-crd-definition-v1.yml`
 
 ## Non-Functional Features
 

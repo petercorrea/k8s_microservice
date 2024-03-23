@@ -13,7 +13,7 @@ spec:
   ingress:
     - from:
         - ipBlock:
-            cidr: 157.245.92.95/32 # Proxy's IP address
+            cidr: 146.190.68.212/32 # Proxy's IP address
     - from:
         - namespaceSelector: {} # Allows all internal traffic
   egress:

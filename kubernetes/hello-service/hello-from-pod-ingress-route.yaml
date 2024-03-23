@@ -7,9 +7,7 @@ spec:
   entryPoints:
     - web
   routes:
-    - match: PathPrefix(`/hello`)
-      # - match: Host(`staging.stackheap.io`) && PathPrefix(`/echo`)
-      # - match: Host(`echo.local`) && PathPrefix(`/echo`)
+    - match: Host(`staging.stackheap.io`) && PathPrefix(`/hello`)
       kind: Rule
       services:
         - name: hello-from-pod-service

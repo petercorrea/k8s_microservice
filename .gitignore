@@ -135,3 +135,5 @@ system_design.yaml
 todo.md
 ignore
 ignore/*
+
+kubeadm_join_cmd.sh

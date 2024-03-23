@@ -7,9 +7,7 @@ spec:
   entryPoints:
     - web
   routes:
-    - match: PathPrefix(`/echo`)
-      # match: Host(`staging.stackheap.io`) && PathPrefix(`/echo`)
-      # - match: Host(`echo.local`) && PathPrefix(`/echo`)
+    - match: Host(`staging.stackheap.io`) && PathPrefix(`/echo`)
       kind: Rule
       services:
         - name: echo-service
