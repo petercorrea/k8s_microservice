@@ -33,7 +33,7 @@ jobs:
           username: ${{ secrets.DOCKER_HUB_USERNAME }}
           password: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
 
-      - name: Build the Builder Image
+      - name: Build and push Builder base image
         run: |
           docker build -t pmcorrea/builder:latest -f ./Dockerfile.base .
           docker push pmcorrea/builder:latest
