@@ -1,9 +1,9 @@
-name: 'Staging: Build and Push Docker images'
+name: 'Prod: Build and Push Docker images'
 
 on:
   push:
     branches:
-      - staging
+      - main
     paths:
       - 'packages/**'
       - 'docker-compose.prod.yml'
