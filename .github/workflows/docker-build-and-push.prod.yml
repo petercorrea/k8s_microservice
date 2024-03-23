@@ -1,39 +1,48 @@
-name: 'Prod: Build and Push Docker images'
+name: 'Staging: Build and Push Docker images'
 
 on:
   push:
     branches:
-      - main
+      - staging
+    paths:
+      - 'packages/**'
+      - 'docker-compose.prod.yml'
 
 jobs:
   build:
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        package: [auth, frontend] # keep up to date
 
     steps:
       - name: Check out the code
-        uses: actions/checkout@v4.1.1 # keep up to date
+        uses: actions/checkout@v4.1.1
 
       - name: Set up Node.js
-        uses: actions/setup-node@v4.0.2 # keep up to date
+        uses: actions/setup-node@v4.0.2
         with:
-          node-version: '21' # keep up to date
+          node-version: '21'
 
       - name: Install Lerna
         run: npm install --global lerna
 
+      - name: Docker Setup Buildx
+        uses: docker/setup-buildx-action@v3.2.0
+
       - name: Log in to Docker Hub
-        uses: docker/login-action@v3.0.0 # keep up to date
+        uses: docker/login-action@v3.0.0
         with:
           username: ${{ secrets.DOCKER_HUB_USERNAME }}
           password: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
 
-      - name: Build and push Docker image for packages
-        if: github.event.push.paths == 'packages/${{ matrix.package }}/**'
-        uses: docker/build-push-action@v5.2.0 # keep up to date
-        with:
-          context: ./packages/${{ matrix.package }}
-          push: true
-          tags: ${{ secrets.DOCKER_HUB_USERNAME }}/${{ matrix.package }}:latest
+      - name: Build the Builder Image
+        run: |
+          docker build -t pmcorrea/builder:latest -f ./Dockerfile.base .
+        env:
+          DOCKER_BUILDKIT: 1
+
+      - name: Build and push Docker images
+        run: |
+          export TAG=prod-${{ github.sha }}
+          docker-compose -f docker-compose.prod.yml build
+          docker-compose -f docker-compose.prod.yml push
+        env:
+          IMAGE_TAG: $TAG
