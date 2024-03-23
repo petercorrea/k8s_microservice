@@ -7,6 +7,7 @@ on:
 
 jobs:
   build:
+    name: 'Staging: Build and Push Docker images'
     runs-on: ubuntu-latest
 
     steps:
