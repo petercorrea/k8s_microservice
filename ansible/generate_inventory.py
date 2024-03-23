@@ -23,11 +23,10 @@ def get_droplets():
         return None
 
 def create_inventory(droplets):
-    inventory = "# This will get the public ips of droplets, consider using private ips\n"
-    inventory += "\n"
+    inventory = ""
     
     # get master node
-    inventory += "[master]\n"
+    inventory += "[masters]\n"
     for droplet in droplets['droplets']:
         droplet_name = droplet['name']
         # inventory names are obtained by looking for the terraform resource names ('k8s-master' / 'k8s-worker')
@@ -55,7 +54,7 @@ def create_inventory(droplets):
 
      # get proxy nodes
     inventory += "\n"
-    inventory += "[proxy]\n"
+    inventory += "[proxies]\n"
     for droplet in droplets['droplets']:
         droplet_name = droplet['name']
         

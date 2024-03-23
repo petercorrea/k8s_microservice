@@ -9,5 +9,5 @@ http:
     traefik:
       loadBalancer:
         servers:
-          - url: 'http://159.223.160.104:30080'
-          - url: 'http://24.199.80.109:30080'
+          - url: 'http://137.184.138.106:30080'
+          - url: 'http://137.184.204.155:30080'

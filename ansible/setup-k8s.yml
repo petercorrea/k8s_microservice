@@ -1,6 +1,6 @@
 ---
 - name: Setup k8s nodes
-  hosts: master:workers
+  hosts: masters:workers
   become: true
   vars:
     arch_mapping:  # Map ansible architecture {{ ansible_architecture }} names to Docker's architecture names
@@ -14,168 +14,193 @@
         name: containerd
         state: restarted
   tasks:
-    - name: Update APT package index
-      ansible.builtin.apt:
-        update_cache: true
+    - name: Update system packages
+      block:
+        - name: Update APT package index
+          ansible.builtin.apt:
+            update_cache: true
 
-    - name: Install required packages
-      ansible.builtin.apt:
-        pkg:
-          - apt-transport-https
-          - ca-certificates
-          - curl
-          - gnupg
-          - software-properties-common
+        - name: Upgrade all packages to the latest version
+          ansible.builtin.apt:
+            upgrade: dist
+            update_cache: true
+            cache_valid_time: 3600  # cache valid for 1 hour to avoid updating the cache if recently updated
+            force_apt_get: true  # use apt-get instead of aptitude
+          register: upgrade_result
+          until: upgrade_result is succeeded
+          retries: 5
+          delay: 60  # wait 60 seconds before retrying
 
-    - name: Create directory for Docker's GPG key
-      ansible.builtin.file:
-        path: /etc/apt/keyrings
-        state: directory
-        mode: '0755'
+    - name: Disable swap
+      block:
+        - name: Turn off swap
+          ansible.builtin.command: swapoff -a
+          changed_when: false
 
-    - name: Add Docker's official GPG key
-      ansible.builtin.apt_key:
-        url: https://download.docker.com/linux/ubuntu/gpg
-        keyring: /etc/apt/keyrings/docker.gpg
-        state: present
+        - name: Comment swap line from /etc/fstab
+          ansible.builtin.lineinfile:
+            path: /etc/fstab
+            regexp: '^([^#].* swap .*)$'
+            line: '#\1'
+            backrefs: true
 
-    - name: Print architecture variables
-      ansible.builtin.debug:
-        msg: "Architecture: {{ ansible_architecture }}, Codename: {{ ansible_lsb.codename }}"
+    - name: Setup kernel modules and sysctl parameters
+      block:
+        - name: Add kernel modules to containerd.conf
+          ansible.builtin.copy:
+            dest: /etc/modules-load.d/containerd.conf
+            content: |
+              overlay
+              br_netfilter
+            owner: root
+            group: root
+            mode: '0644'
 
-    - name: Print architecture variables
-      ansible.builtin.debug:
-        msg: "deb [arch={{ arch_mapping[ansible_architecture] | default(ansible_architecture) }}
-          signed-by=/etc/apt/keyrings/docker.gpg]
-          https://download.docker.com/linux/ubuntu {{ ansible_lsb.codename }} stable"
+        - name: Load kernel modules
+          community.general.modprobe:
+            name: "{{ item }}"
+          loop:
+            - overlay
+            - br_netfilter
 
-    - name: Add Docker repository
-      ansible.builtin.apt_repository:
-        repo: >-
-          deb [arch={{ arch_mapping[ansible_architecture] | default(ansible_architecture) }}
-          signed-by=/etc/apt/keyrings/docker.gpg]
-          https://download.docker.com/linux/ubuntu {{ ansible_lsb.codename }} stable
-        filename: docker
-        state: present
+        - name: Add sysctl parameters
+          ansible.builtin.copy:
+            dest: /etc/sysctl.d/kubernetes.conf
+            content: |
+              net.bridge.bridge-nf-call-ip6tables = 1
+              net.bridge.bridge-nf-call-iptables = 1
+              net.ipv4.ip_forward = 1
+            owner: root
+            group: root
+            mode: '0644'
 
-    - name: Update the apt package index (again)
-      ansible.builtin.apt:
-        update_cache: true
+        - name: Reload sysctl
+          ansible.builtin.command: sysctl --system
+          changed_when: false
 
-    - name: Install Docker and related packages
-      ansible.builtin.apt:
-        name: "{{ item }}"
-        state: present
-        update_cache: true
-      loop:
-        - docker-ce
-        - docker-ce-cli
-        - containerd.io
-        - docker-buildx-plugin
-        - docker-compose-plugin
+    - name: Setup Docker
+      block:
+        - name: Install packages
+          ansible.builtin.apt:
+            pkg:
+              - apt-transport-https
+              - ca-certificates
+              - curl
+              - gnupg2
+              - software-properties-common
 
-    - name: Install Grafana Loki Docker Driver plugin
-      community.docker.docker_plugin:
-        plugin_name: grafana/loki-docker-driver:latest
-        alias: loki
-        state: present
+        - name: Create directory for Docker's GPG key
+          ansible.builtin.file:
+            path: /etc/apt/keyrings
+            state: directory
+            mode: '0755'
 
-    - name: Add Docker group
-      ansible.builtin.group:
-        name: docker
-        state: present
+        - name: Add Docker's official GPG key
+          ansible.builtin.apt_key:
+            url: https://download.docker.com/linux/ubuntu/gpg
+            keyring: /etc/apt/keyrings/docker.gpg
+            state: present
 
-    - name: Add user to Docker group
-      ansible.builtin.user:
-        name: "{{ ansible_user }}"
-        groups: docker
-        append: true
+        - name: Add Docker repository
+          ansible.builtin.apt_repository:
+            repo: >-
+              deb [arch={{ arch_mapping[ansible_architecture] | default(ansible_architecture) }}
+              signed-by=/etc/apt/keyrings/docker.gpg]
+              https://download.docker.com/linux/ubuntu {{ ansible_lsb.codename }} stable
+            filename: docker
+            state: present
 
-    - name: Enable and start Docker services
-      ansible.builtin.systemd:
-        name: "{{ item }}"
-        enabled: true
-        state: started
-      loop:
-        - docker.service
-        - containerd.service
+        - name: Install Docker related packages
+          ansible.builtin.apt:
+            name: "{{ item }}"
+            state: present
+            update_cache: true
+          loop:
+            - docker-ce
+            - docker-ce-cli
+            - docker-buildx-plugin
+            - docker-compose-plugin
 
-    - name: Download and add Kubernetes’ official GPG key
-      ansible.builtin.shell:
-        cmd: |
-          curl -fsSL https://pkgs.k8s.io/core:/stable:/v1.28/deb/Release.key | gpg --dearmor -o /etc/apt/keyrings/kubernetes-apt-keyring.gpg
+        - name: Install Grafana Loki Docker Driver plugin
+          community.docker.docker_plugin:
+            plugin_name: grafana/loki-docker-driver:latest
+            alias: loki
+            state: present
 
-    - name: Add Kubernetes APT repository
-      ansible.builtin.apt_repository:
-        repo: deb [signed-by=/etc/apt/keyrings/kubernetes-apt-keyring.gpg] https://pkgs.k8s.io/core:/stable:/v1.28/deb/ /
-        state: present
+        - name: Enable and start Docker services
+          ansible.builtin.systemd:
+            name: "{{ item }}"
+            enabled: true
+            state: started
+          loop:
+            - docker.service
+            - containerd.service
 
-    - name: Install kubelet, kubeadm and kubectl
-      ansible.builtin.apt:
-        name:
-          - kubelet
-          - kubeadm
-          - kubectl
-        state: present
-        update_cache: true
+    - name: Setup containerd
+      block:
+        - name: Install containerd
+          ansible.builtin.apt:
+            name: containerd.io
+            state: present
+            update_cache: true
 
-    - name: Hold kubelet, kubeadm and kubectl at their current version
-      ansible.builtin.apt:
-        name: "{{ item }}"
-        state: fixed
-      loop:
-        - kubelet
-        - kubeadm
-        - kubectl
+        - name: Generate containerd config
+          ansible.builtin.shell:
+            cmd: containerd config default > /etc/containerd/config.toml
+          changed_when: false
 
-    - name: Turn off swap
-      ansible.builtin.command: swapoff -a
-      changed_when: false
+        - name: Set SystemdCgroup to true in containerd config
+          ansible.builtin.lineinfile:
+            path: /etc/containerd/config.toml
+            regexp: '^(\s*SystemdCgroup\s*=\s*)false'
+            line: '\1true'
+            backrefs: true
+          notify: Restart containerd
 
-    - name: Comment swap line from /etc/fstab
-      ansible.builtin.lineinfile:
-        path: /etc/fstab
-        regexp: '^(.+\s+swap\s+.+)$'
-        line: '#\1'
-        backrefs: true
+        - name: Enable and start containerd service
+          ansible.builtin.systemd:
+            name: containerd
+            enabled: true
+            state: started
 
-    - name: Install containerd
-      ansible.builtin.apt:
-        name: containerd
-        state: present
-        update_cache: true
+    - name: Setup Kubernetes
+      block:
+        - name: Download Kubernetes official GPG key
+          ansible.builtin.get_url:
+            url: https://pkgs.k8s.io/core:/stable:/v1.29/deb/Release.key
+            dest: /tmp/kubernetes-release.key
+            mode: '0644'
 
-    - name: Create containerd configuration directory
-      ansible.builtin.file:
-        path: /etc/containerd
-        state: directory
-        owner: root
-        group: root
-        mode: '0755'
+        - name: Dearmor and move Kubernetes GPG key to apt keyrings
+          ansible.builtin.command: gpg --dearmor --yes -o /etc/apt/keyrings/kubernetes-apt-keyring.gpg /tmp/kubernetes-release.key
+          changed_when: false
 
-    - name: Configure containerd for Kubernetes
-      ansible.builtin.copy:
-        dest: /etc/containerd/config.toml
-        content: |
-          [plugins."io.containerd.grpc.v1.cri".containerd.runtimes.runc]
-            runtime_type = "io.containerd.runc.v2"
-          [plugins."io.containerd.grpc.v1.cri".cni]
-            bin_dir = "/opt/cni/bin"
-            conf_dir = "/etc/cni/net.d"
-        backup: true
-        owner: root
-        group: root
-        mode: '0644'
-      notify: Restart containerd
+        - name: Add Kubernetes APT repository
+          ansible.builtin.apt_repository:
+            repo: "deb [signed-by=/etc/apt/keyrings/kubernetes-apt-keyring.gpg] https://pkgs.k8s.io/core:/stable:/v1.29/deb/ /"
+            state: present
+            filename: kubernetes.list
 
-    - name: Enable and start containerd service
-      ansible.builtin.systemd:
-        name: containerd
-        enabled: true
-        state: started
+        - name: Install kubelet, kubeadm and kubectl
+          ansible.builtin.apt:
+            name:
+              - kubelet
+              - kubeadm
+              - kubectl
+            state: present
+            update_cache: true
+
+        - name: Hold kubelet, kubeadm and kubectl at their current versions
+          ansible.builtin.apt:
+            name: "{{ item }}"
+            state: fixed
+          loop:
+            - kubelet
+            - kubeadm
+            - kubectl
 
 - name: Configure master node
-  hosts: master
+  hosts: masters
   become: true
   tasks:
     - name: Initialize the Kubernetes cluster
@@ -192,10 +217,6 @@
         group: root
         mode: '0644'
 
-    - name: Debug print entire kubeadm init output
-      ansible.builtin.debug:
-        msg: "{{ init_output.stdout }}"
-
     - name: Save kubeadm join command
       ansible.builtin.copy:
         dest: /etc/kubeadm_join_cmd.sh
@@ -205,20 +226,11 @@
         owner: root
         group: root
         mode: '0755'
-      # when: init_output.stdout is search("kubeadm join")
 
     - name: Read kubeadm join command file
       ansible.builtin.slurp:
         src: /etc/kubeadm_join_cmd.sh
       register: kubeadm_join_cmd_file
-      # The condition ensures this task runs only if the join command file is expected to exist.
-      # when: init_output.stdout is search("kubeadm join")
-
-    - name: Debug print kubeadm join command file
-      ansible.builtin.debug:
-        msg: "{{ kubeadm_join_cmd_file['content'] | b64decode }}"
-      # Similarly, this only runs if the above task ran and registered the variable.
-      # when: init_output.stdout is search("kubeadm join")
 
     - name: Copy kubeadm join command to local machine
       ansible.builtin.fetch:
@@ -228,24 +240,30 @@
 
     - name: Create .kube directory
       ansible.builtin.file:
-        path: /root/.kube
+        path: "{{ ansible_env.HOME }}/.kube"
         state: directory
+        owner: root
+        group: root
         mode: '0755'
 
     - name: Copy admin.conf to /root/.kube/config
       ansible.builtin.copy:
         src: /etc/kubernetes/admin.conf
-        dest: /root/.kube/config
+        dest: "{{ ansible_env.HOME }}/.kube/config"
         remote_src: true
+        owner: root
+        group: root
         mode: '0644'
 
-    - name: Apply Calico network policy
-      ansible.builtin.command: kubectl apply -f https://docs.projectcalico.org/manifests/calico.yaml
-      changed_when: false
-      environment:
-        KUBECONFIG: /root/.kube/config
+    - name: Copy manifests to master node
+      ansible.builtin.copy:
+        src: ../kubernetes/
+        dest: ~/kubernetes/
+        owner: root
+        group: root
+        mode: '0755'
 
-- name: Configure worker nodes
+- name: Join worker nodes
   hosts: workers
   become: true
   tasks:
@@ -258,3 +276,33 @@
     - name: Execute kubeadm join on worker nodes
       ansible.builtin.command: sh /tmp/kubeadm_join_cmd.sh
       changed_when: false
+
+- name: Install networking tools, plugins and crds
+  hosts: masters
+  become: true
+  tasks:
+    - name: Install Traefik custom resource definitions
+      ansible.builtin.command: |
+        kubectl apply -f https://raw.githubusercontent.com/traefik/traefik/v2.11/docs/content/reference/dynamic-configuration/kubernetes-crd-definition-v1.yml
+      changed_when: false
+
+    - name: Install the Tigera Calico operator and custom resource definitions
+      ansible.builtin.command: kubectl create -f https://raw.githubusercontent.com/projectcalico/calico/v3.27.2/manifests/tigera-operator.yaml
+      changed_when: false
+
+    - name: Install the Calico custom resource
+      ansible.builtin.command: kubectl create -f  https://raw.githubusercontent.com/projectcalico/calico/v3.27.2/manifests/custom-resources.yaml
+
+    - name: Setup calicoctl
+      block:
+        - name: Download calicoctl
+          ansible.builtin.get_url:
+            url: https://github.com/projectcalico/calico/releases/download/v3.27.2/calicoctl-linux-amd64
+            dest: /usr/local/bin/calicoctl
+            mode: '0755'
+
+        - name: Set calicoctl executable
+          ansible.builtin.file:
+            path: /usr/local/bin/calicoctl
+            mode: '0755'
+            state: file
