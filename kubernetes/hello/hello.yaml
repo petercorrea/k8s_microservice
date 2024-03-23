@@ -26,3 +26,31 @@ spec:
               valueFrom:
                 fieldRef:
                   fieldPath: status.hostIP
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: hello-from-pod-service
+spec:
+  ports:
+    - port: 80
+      targetPort: 3000
+  selector:
+    app: hello-from-pod
+
+---
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: hello-from-pod-ingressroute
+  namespace: default
+spec:
+  entryPoints:
+    - web
+  routes:
+    - match: Host(`staging.stackheap.io`) && PathPrefix(`/hello`)
+      kind: Rule
+      services:
+        - name: hello-from-pod-service
+          port: 80

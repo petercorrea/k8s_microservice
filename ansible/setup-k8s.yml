@@ -255,15 +255,7 @@
         group: root
         mode: '0644'
 
-    - name: Copy manifests to master node
-      ansible.builtin.copy:
-        src: ../kubernetes/
-        dest: ~/kubernetes/
-        owner: root
-        group: root
-        mode: '0755'
-
-- name: Join worker nodes
+- name: Configure worker nodes
   hosts: workers
   become: true
   tasks:

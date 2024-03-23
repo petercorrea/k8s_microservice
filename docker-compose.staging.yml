@@ -6,8 +6,8 @@ services:
       context: ./packages/frontend
       dockerfile: Dockerfile
       args:
-        BASE_IMAGE: lerna-base:latest
-    # image: pmcorrea/frontend:staging-${{ github.sha }}
+        BASE_IMAGE: pmcorrea/builder:latest
+    image: pmcorrea/frontend:${TAG}
     ports:
       - '3000:3000'
     environment:
@@ -37,8 +37,8 @@ services:
       context: ./packages/auth
       dockerfile: Dockerfile
       args:
-        BASE_IMAGE: lerna-base:latest
-    # image: pmcorrea/auth:staging-${{ github.sha }}
+        BASE_IMAGE: pmcorrea/builder:latest
+    image: pmcorrea/auth:${TAG}
     ports:
       - '9000:9000'
     environment:
@@ -68,8 +68,8 @@ services:
       context: ./packages/hello-from-pod
       dockerfile: Dockerfile
       args:
-        BASE_IMAGE: lerna-base:latest
-    # image: pmcorrea/hello-from-pod:staging-${{ github.sha }}
+        BASE_IMAGE: pmcorrea/builder:latest
+    image: pmcorrea/hello-from-pod:${TAG}
     ports:
       - '3000:3000'
     environment:
@@ -353,3 +353,4 @@ volumes:
 networks:
   loki:
   # roach:
+# test

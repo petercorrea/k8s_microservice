@@ -1,0 +1,24 @@
+---
+- name: Configure master node
+  hosts: masters
+  become: true
+  tasks:
+    - name: Copy manifests to master node
+      ansible.builtin.copy:
+        src: ../kubernetes/
+        dest: ~/kubernetes/
+        owner: root
+        group: root
+        mode: '0755'
+
+- name: Configure worker nodes
+  hosts: workers
+  become: true
+  tasks:
+    - name: Copy loki config
+      ansible.builtin.copy:
+        src: ../loki/
+        dest: ~/loki/
+        owner: root
+        group: root
+        mode: '0755'
