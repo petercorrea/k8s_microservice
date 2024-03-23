@@ -36,6 +36,7 @@ jobs:
       - name: Build the Builder Image
         run: |
           docker build -t pmcorrea/builder:latest -f ./Dockerfile.base .
+          docker push pmcorrea/builder:latest
         env:
           DOCKER_BUILDKIT: 1
 

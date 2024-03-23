@@ -6,7 +6,7 @@ services:
       context: ./packages/frontend
       dockerfile: Dockerfile
       args:
-        BASE_IMAGE: lerna-base:latest
+        BASE_IMAGE: pmcorrea/builder:latest
     image: pmcorrea/frontend:staging-${{ github.sha }}
     ports:
       - '3000:3000'
@@ -37,7 +37,7 @@ services:
       context: ./packages/auth
       dockerfile: Dockerfile
       args:
-        BASE_IMAGE: lerna-base:latest
+        BASE_IMAGE: pmcorrea/builder:latest
     image: pmcorrea/auth:staging-${{ github.sha }}
     ports:
       - '9000:9000'
@@ -68,7 +68,7 @@ services:
       context: ./packages/hello-from-pod
       dockerfile: Dockerfile
       args:
-        BASE_IMAGE: lerna-base:latest
+        BASE_IMAGE: pmcorrea/builder:latest
     image: pmcorrea/hello-from-pod:staging-${{ github.sha }}
     ports:
       - '3000:3000'
