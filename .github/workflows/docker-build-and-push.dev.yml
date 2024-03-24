@@ -1,4 +1,4 @@
-name: 'Staging: Build and Push Docker images'
+name: 'Dev: Build and Push Docker images'
 
 on:
   push:
@@ -8,7 +8,7 @@ on:
 
 jobs:
   build:
-    name: 'Staging: Build and Push Docker images'
+    name: 'Dev: Build and Push Docker images'
     runs-on: ubuntu-latest
 
     steps:
