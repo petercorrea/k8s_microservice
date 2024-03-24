@@ -17,8 +17,8 @@
   tasks:
     - name: Copy loki config
       ansible.builtin.copy:
-        src: ../loki/
-        dest: ~/loki/
+        src: ../loki/loki-config.yml
+        dest: /etc/loki/
         owner: root
         group: root
         mode: '0755'

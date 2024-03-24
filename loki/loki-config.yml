@@ -1,3 +1,4 @@
+# this is copied by ansible and placed into /etc/loki onto the worker nodes
 auth_enabled: false
 
 server:

@@ -298,3 +298,22 @@
             path: /usr/local/bin/calicoctl
             mode: '0755'
             state: file
+
+    - name: Install DigitalOcean CSI driver for storage blocks
+      block:
+        - name: Install DigitalOcean CSI driver
+          shell: >
+            kubectl apply -fhttps://raw.githubusercontent.com/digitalocean/csi-digitalocean/master/deploy/kubernetes/releases/csi-digitalocean-v4.8.0/{crds.yaml,driver.yaml,snapshot-controller.yaml}
+          args:
+            executable: /bin/bash
+          register: apply_output
+          until: apply_output.rc == 0
+          retries: 2
+          delay: 10
+
+        - name: Reapply the manifests if necessary to ensure CRDs are established
+          shell: >
+            kubectl apply -fhttps://raw.githubusercontent.com/digitalocean/csi-digitalocean/master/deploy/kubernetes/releases/csi-digitalocean-v4.8.0/{crds.yaml,driver.yaml,snapshot-controller.yaml}
+          args:
+            executable: /bin/bash
+          when: apply_output.rc != 0
