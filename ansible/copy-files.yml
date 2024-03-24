@@ -22,3 +22,29 @@
         owner: root
         group: root
         mode: '0755'
+
+- name: Update .bashrc with kubectl function
+  hosts: all
+  tasks:
+    - name: Ensure .bashrc contains the kubectl function
+      blockinfile:
+        path: ~/.bashrc
+        block: |
+          k() {
+              kubectl "$@"
+          }
+
+          k:all() {
+              watch kubectl get node,ingressroute,service,pods,pvc,deployment,statefulset,networkpolicy,secret -n default -o wide
+          }
+
+          k:pf:t() {
+              kubectl port-forward svc/traefik 9000:8080
+          }
+
+          k:pf:g() {
+              kubectl port-forward svc/grafana 3100:3000
+          }
+        marker: "# {mark} ANSIBLE MANAGED BLOCK kubectl-function"
+        create: yes
+      become: no

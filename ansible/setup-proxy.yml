@@ -38,16 +38,6 @@
         keyring: /etc/apt/keyrings/docker.gpg
         state: present
 
-    - name: Print architecture variables
-      ansible.builtin.debug:
-        msg: "Architecture: {{ ansible_architecture }}, Codename: {{ ansible_lsb.codename }}"
-
-    - name: Print architecture variables
-      ansible.builtin.debug:
-        msg: "deb [arch={{ arch_mapping[ansible_architecture] | default(ansible_architecture) }}
-          signed-by=/etc/apt/keyrings/docker.gpg]
-          https://download.docker.com/linux/ubuntu {{ ansible_lsb.codename }} stable"
-
     - name: Add Docker repository
       ansible.builtin.apt_repository:
         repo: >-
@@ -99,10 +89,17 @@
         - docker.service
         - containerd.service
 
-    - name: Copy Docker Compose file to remote host
+    - name: Copy config files to remote host
       ansible.builtin.copy:
         src: ../proxy/
         dest: ~/proxy/
+        
+    - name: Set specific permissions for acme.json
+      ansible.builtin.file:
+        path: ~/proxy/acme.json
+        owner: root
+        group: root
+        mode: '600'
 
     - name: Build and run Docker Compose project on remote host
       ansible.builtin.shell:
@@ -110,4 +107,3 @@
       become: yes
       args:
         chdir: ~/proxy/
-
