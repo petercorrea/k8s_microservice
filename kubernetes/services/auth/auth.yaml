@@ -1,0 +1,83 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: auth
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: auth
+  template:
+    metadata:
+      labels:
+        app: auth
+    spec:
+      containers:
+        - name: auth
+          image: pmcorrea/auth:latest
+          ports:
+            - containerPort: 3000
+          env:
+            - name: PROD
+              value: 'true'
+            - name: JWT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: api-secrets
+                  key: JWT_SECRET
+            - name: COOKIE_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: api-secrets
+                  key: COOKIE_SECRET
+            - name: CLIENT_ID
+              valueFrom:
+                secretKeyRef:
+                  name: api-secrets
+                  key: CLIENT_ID
+            - name: CLIENT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: api-secrets
+                  key: CLIENT_SECRET
+          volumeMounts:
+            - name: server-cert
+              mountPath: '/app/packages/auth/server.cert'
+              readOnly: true
+            - name: server-key
+              mountPath: '/app/packages/auth/server.key'
+              readOnly: true
+      volumes:
+        - name: server-cert
+          secret:
+            secretName: CERT_SECRET
+        - name: server-key
+          secret:
+            secretName: CERT_KEY_SECRET
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: auth
+spec:
+  ports:
+    - port: 3000
+      targetPort: 3000
+  selector:
+    app: auth
+
+---
+apiVersion: traefik.containo.us/v1alpha1
+kind: IngressRoute
+metadata:
+  name: auth
+spec:
+  entryPoints:
+    - web
+  routes:
+    - match: Host(`staging.stackheap.io`) && PathPrefix(`/auth`)
+      kind: Rule
+      services:
+        - name: auth
+          port: 3000

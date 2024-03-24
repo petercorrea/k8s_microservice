@@ -48,7 +48,7 @@ In progress.
          1. `http://loki:3100`
    3. Proxy Traefrik dashboard
       1. `http://<domain>:8080/dashboard/#/`
-8. Login into master node and apply manifests
+8. Log into master node and apply manifests
 
 ## Non-Functional Features
 

@@ -37,7 +37,7 @@ if (process.env.COOKIE_SECRET == null || process.env.JWT_SECRET == null) {
 // Instantiate w/ logging, schema validation and type support
 const FILENAME = fileURLToPath(import.meta.url);
 const DIRNAME = path.dirname(FILENAME);
-const logging_options = {
+const server_options = {
   http2: true,
   https: {
     allowHTTP1: true, // Fallback support for HTTP/1
@@ -56,7 +56,7 @@ const logging_options = {
 };
 
 export const app: FastifyInstance =
-  fastify(logging_options).withTypeProvider<TypeBoxTypeProvider>();
+  fastify(server_options).withTypeProvider<TypeBoxTypeProvider>();
 
 // Cookies
 await app.register(cookie, {
