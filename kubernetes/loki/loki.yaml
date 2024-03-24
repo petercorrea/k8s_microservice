@@ -14,6 +14,7 @@ spec:
       containers:
         - name: loki
           image: grafana/loki:latest
+          # imagePullPolicy: Always
           args:
             - '-config.file=/etc/loki/loki-config.yml'
           ports:
@@ -32,7 +33,7 @@ spec:
       volumes:
         - name: loki-config
           hostPath:
-            path: ./loki # Adjust this to the appropriate path on host
+            path: /etc/loki
 
 ---
 apiVersion: v1

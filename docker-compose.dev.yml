@@ -1,10 +1,11 @@
+# this isused by developers to run services locally
 version: '3.8'
 services:
   # app services
   frontend:
     build:
       context: ./packages/frontend
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile.dev
       args:
         BASE_IMAGE: lerna-base:latest
     ports:
