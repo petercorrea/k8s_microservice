@@ -4,7 +4,7 @@
 *       @petercorrea
 
 # Specify code owner for a specific directory
-// /some-directory/   @team-name
+# /some-directory/   @team-name
 
 # Specify code owner for a specific file
-// /some-directory/specific-file.txt   @username
+# /some-directory/specific-file.txt   @username
