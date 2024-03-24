@@ -1,14 +1,27 @@
+# Dynamic configuration
 # update the urls to the current worker nodes
 http:
   routers:
     proxy-router:
       rule: 'Host(`staging.stackheap.io`)'
-      service: 'traefik'
+      service: 'traefik-service'
       entryPoints:
         - 'web'
+        - 'websecure'
+      middlewares:
+        - 'httpsRedirect'
+      tls:
+        certResolver: acme-resolver # Use the ACME resolver for automatic certificate handling
+
   services:
-    traefik:
+    traefik-service:
       loadBalancer:
         servers:
           - url: 'http://137.184.138.106:30080'
           - url: 'http://137.184.204.155:30080'
+
+  middlewares:
+    httpsRedirect:
+      redirectScheme:
+        scheme: https
+        permanent: true
