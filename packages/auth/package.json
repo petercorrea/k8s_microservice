@@ -12,8 +12,10 @@
     "test": "TEST=true vitest run",
     "test:ui": "TEST=true vitest --ui",
     "dev": "DEV=true tsx watch src/index.ts",
-    "start": "npm run build && PROD=true node dist/index.js",
-    "cluster": "npm run build && PROD=true node dist/cluster.js",
+    "start:local": "npm run build && PROD=true node dist/index.js",
+    "start": "PROD=true node dist/index.js",
+    "cluster:local": "npm run build && PROD=true node dist/cluster.js",
+    "cluster": "PROD=true node dist/cluster.js",
     "autocannon": "autocannon -c 100 -d 30 -p 10 https://localhost:9000/",
     "artillery": "artillery run src/tests/load/loadtest.yml"
   },

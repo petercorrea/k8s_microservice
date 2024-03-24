@@ -1,0 +1,10 @@
+# This is a comment
+
+# Specify code owner for the entire repo
+*       @petercorrea
+
+# Specify code owner for a specific directory
+# /some-directory/   @team-name
+
+# Specify code owner for a specific file
+# /some-directory/specific-file.txt   @username
