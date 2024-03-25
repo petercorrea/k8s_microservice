@@ -1,1 +1,3 @@
 ../../mongodb_data
+tls.crt
+tls.key
