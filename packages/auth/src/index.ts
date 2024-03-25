@@ -42,8 +42,8 @@ const server_options = {
   http2: true,
   https: {
     allowHTTP1: true, // Fallback support for HTTP/1
-    key: fs.readFileSync(path.join(DIRNAME, '../tls.key')),
-    cert: fs.readFileSync(path.join(DIRNAME, '../tls.crt')),
+    key: fs.readFileSync(path.join(DIRNAME, '../tls/tls.key')),
+    cert: fs.readFileSync(path.join(DIRNAME, '../tls/tls.crt')),
   },
   ...(is_dev &&
     process.stdout.isTTY && {
