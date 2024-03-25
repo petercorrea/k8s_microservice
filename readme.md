@@ -94,7 +94,7 @@ In progress.
   - [ ] Rulesets to improve merge quality.
 - [ ] High commit quality with **Husky**.
 - [ ] Multi-package repository with **Lerna**.
-- [ ] Feature flags with **Optimizly**
+- [ ] Feature flags with **Optimizly**.
 
 ### Documentation
 

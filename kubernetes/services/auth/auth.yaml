@@ -43,7 +43,7 @@ spec:
                   key: CLIENT_SECRET
           volumeMounts:
             - name: tls
-              mountPath: '/app/packages/auth'
+              mountPath: '/app/packages/auth/tls'
               readOnly: true
       volumes:
         - name: tls
