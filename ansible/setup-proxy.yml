@@ -101,9 +101,16 @@
         group: root
         mode: '600'
 
+    - name: Set specific permissions for acme-staging.json
+      ansible.builtin.file:
+        path: ~/proxy/acme-staging.json
+        owner: root
+        group: root
+        mode: '600'
+
     - name: Build and run Docker Compose project on remote host
       ansible.builtin.shell:
-        cmd: docker compose -f docker-compose.yaml up -d --build
+        cmd: docker compose -f docker-compose.staging.yaml up -d --build
       become: yes
       args:
         chdir: ~/proxy/

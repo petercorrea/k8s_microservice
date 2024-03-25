@@ -2,26 +2,35 @@
 # update the urls to the current worker nodes
 http:
   routers:
-    proxy-router:
+    # http-challenge:
+    #   rule: 'Path(`/.well-known/acme-challenge/`)'
+    #   entryPoints:
+    #     - 'web'
+    #   service: 'acme-http@internal'
+
+    stackheap:
       rule: 'Host(`staging.stackheap.io`)'
-      service: 'traefik-service'
+      service: 'stackheap-service'
       entryPoints:
         - 'web'
-        - 'websecure'
-      middlewares:
-        - 'httpsRedirect'
-      tls:
-        certResolver: acme-resolver # Use the ACME resolver for automatic certificate handling
+      # middlewares:
+      #   - 'httpsRedirect'
 
   services:
-    traefik-service:
+    stackheap-service:
       loadBalancer:
         servers:
           - url: 'http://137.184.138.106:30080'
           - url: 'http://137.184.204.155:30080'
 
-  middlewares:
-    httpsRedirect:
-      redirectScheme:
-        scheme: https
-        permanent: true
+    # middlewares:
+    #   httpsRedirect:
+    #     redirectScheme:
+    #       scheme: https
+    #       permanent: true
+
+    # auth:
+    #   basicAuth:
+    #     users:
+    #       # htpasswd -nbB admin "password"
+    #       - 'admin:$2y$05$Whui4glE49NPi31X3PyMF.ZbuyV59QvU3NLO24m0sGItKKNTTVpUW'
