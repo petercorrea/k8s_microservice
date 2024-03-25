@@ -1,4 +1,4 @@
-# this isused by github actions to build the images and push to dockerhub
+# this is used by github actions to build the images and push to dockerhub
 version: '3.8'
 services:
   # app services
