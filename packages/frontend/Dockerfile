@@ -9,7 +9,7 @@ RUN addgroup -S dockergroup && adduser -S docker -G dockergroup
 
 COPY --chown=docker:dockergroup . ./
 
-RUN chmod -R 777 /app
+RUN chmod -R 777 /app/packages/frontend
 
 RUN npm install
 
