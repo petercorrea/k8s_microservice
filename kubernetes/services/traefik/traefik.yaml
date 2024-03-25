@@ -6,7 +6,7 @@ metadata:
     app: traefik
   namespace: default
 spec:
-  replicas: 2
+  replicas: 1
   selector:
     matchLabels:
       app: traefik
@@ -27,6 +27,10 @@ spec:
             - --entrypoints.web.Address=:80
             - --entrypoints.websecure.Address=:443
             - --providers.kubernetescrd
+            # - --certificatesresolvers.myresolver.acme.httpchallenge=true
+            # - --certificatesresolvers.myresolver.acme.httpchallenge.entrypoint=web
+            # - --certificatesresolvers.myresolver.acme.email=you@example.com
+            # - --certificatesresolvers.myresolver.acme.storage=/acme.json
           ports:
             - name: web
               containerPort: 80
@@ -34,7 +38,6 @@ spec:
               containerPort: 443
             - name: admin
               containerPort: 8080
-
 ---
 apiVersion: v1
 kind: Service

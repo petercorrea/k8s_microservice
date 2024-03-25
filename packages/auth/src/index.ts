@@ -37,12 +37,13 @@ if (process.env.COOKIE_SECRET == null || process.env.JWT_SECRET == null) {
 // Instantiate w/ logging, schema validation and type support
 const FILENAME = fileURLToPath(import.meta.url);
 const DIRNAME = path.dirname(FILENAME);
+
 const server_options = {
   http2: true,
   https: {
     allowHTTP1: true, // Fallback support for HTTP/1
-    key: fs.readFileSync(path.join(DIRNAME, '../server.key')),
-    cert: fs.readFileSync(path.join(DIRNAME, '../server.cert')),
+    key: fs.readFileSync(path.join(DIRNAME, '../tls.key')),
+    cert: fs.readFileSync(path.join(DIRNAME, '../tls.crt')),
   },
   ...(is_dev &&
     process.stdout.isTTY && {

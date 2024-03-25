@@ -1,0 +1,17 @@
+name: Main only accepts merges from staging
+
+on:
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  check-staging:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check source branch
+        run: |
+          if [[ "${{ github.head_ref }}" != "staging" ]]; then
+            echo "Error: Merges to main are only allowed from staging."
+            exit 1
+          fi
