@@ -41,20 +41,13 @@ spec:
                   name: api-secrets
                   key: CLIENT_SECRET
           volumeMounts:
-            - name: server-cert
-              mountPath: '/app/packages/auth/server.cert'
-              readOnly: true
-            - name: server-key
-              mountPath: '/app/packages/auth/server.key'
+            - name: tls
+              mountPath: '/app/packages/auth'
               readOnly: true
       volumes:
-        - name: server-cert
+        - name: tls
           secret:
-            secretName: CERT_SECRET
-        - name: server-key
-          secret:
-            secretName: CERT_KEY_SECRET
-
+            secretName: tls-secret
 ---
 apiVersion: v1
 kind: Service
@@ -74,10 +67,12 @@ metadata:
   name: auth
 spec:
   entryPoints:
-    - web
+    - websecure
   routes:
     - match: Host(`staging.stackheap.io`) && PathPrefix(`/auth`)
       kind: Rule
       services:
         - name: auth
-          port: 3000
+          port: 443
+  tls:
+    secretName: tls-secret
