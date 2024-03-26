@@ -26,11 +26,10 @@ import { public_routes } from './routes/public.js';
 import { type IGoogleUserInfo } from './types/auth.js';
 import { configure_environment } from './utils/helpers.js';
 
-console.log('logging');
-console.log(process.env.COOKIE_SECRET, process.env.JWT_SECRET);
-
 // Load Configuration
 const { env } = configure_environment();
+console.log(`ENV is ${env}`);
+
 const is_dev = env === 'DEV';
 const is_prod = env === 'PROD';
 
