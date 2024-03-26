@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
         - name: go-microservice
-          image: pmcorrea/my-go-microservice:latest
+          image: pmcorrea/my-go-microservice:staging
           ports:
             - containerPort: 8080
 

@@ -17,4 +17,4 @@ RUN npm run build
 
 USER docker
 
-CMD ["lerna", "run", "start", "--scope=auth-service"]
+CMD ["npm", "run", "start",]
