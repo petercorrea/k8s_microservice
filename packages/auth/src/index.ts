@@ -223,7 +223,8 @@ const start = async (): Promise<void> => {
 
   console.log(`Initializing instance...`);
   app.listen(
-    { port: Number(process.env.PORT) ?? 9000, host: '0.0.0.0' },
+    // { port: Number(process.env.PORT) ?? 9000, host: '0.0.0.0' },
+    { port: Number(process.env.PORT) ?? 9000 },
     (err, address) => {
       if (err != null) {
         console.log(`Could not initialize server: ${err.message}`);
