@@ -28,8 +28,6 @@ import { configure_environment } from './utils/helpers.js';
 
 // Load Configuration
 const { env } = configure_environment();
-console.log(`ENV is ${env}`);
-
 const is_dev = env === 'DEV';
 const is_prod = env === 'PROD';
 
@@ -223,14 +221,16 @@ const start = async (): Promise<void> => {
     app.swagger();
   }
 
+  console.log(`Initializing instance...`);
   app.listen(
     { port: Number(process.env.PORT) ?? 9000, host: '0.0.0.0' },
     (err, address) => {
       if (err != null) {
-        app.log.error(err);
+        console.log(`Could not initialize server: ${err.message}`);
+        app.log.error(err.message);
         process.exit(1);
       }
-      console.log(`Initializing instance...`);
+
       console.log(`Environment set: ${env}`);
       console.log(`Server listening on ${address}`);
     }
