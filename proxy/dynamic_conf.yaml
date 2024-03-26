@@ -2,19 +2,30 @@
 # update the urls to the current worker nodes
 http:
   routers:
-    # http-challenge:
-    #   rule: 'Path(`/.well-known/acme-challenge/`)'
-    #   entryPoints:
-    #     - 'web'
-    #   service: 'acme-http@internal'
+    traefik-dashboard:
+      rule: 'Host(`staging.stackheap.io`) && PathPrefix(`/dashboard`)'
+      service: 'api@internal'
+      entryPoints:
+        - 'websecure'
+      tls:
+        certResolver: 'acme-staging'
+      middlewares:
+        - 'auth'
 
     stackheap:
       rule: 'Host(`staging.stackheap.io`)'
       service: 'stackheap-service'
       entryPoints:
-        - 'web'
-      # middlewares:
-      #   - 'httpsRedirect'
+        - 'websecure'
+      tls:
+        certResolver: 'acme-staging'
+
+  middlewares:
+    auth:
+      basicAuth:
+        # htpasswd -nbB admin password (bcrypt)
+        users:
+          - 'admin:$2y$05$c1qspNW2kgnnVWo8S/9HD.UBJ/RyOU08Q2mw.4opmb3w8e5Q0/q5.'
 
   services:
     stackheap-service:
@@ -22,15 +33,3 @@ http:
         servers:
           - url: 'http://137.184.138.106:30080'
           - url: 'http://137.184.204.155:30080'
-
-    # middlewares:
-    #   httpsRedirect:
-    #     redirectScheme:
-    #       scheme: https
-    #       permanent: true
-
-    # auth:
-    #   basicAuth:
-    #     users:
-    #       # htpasswd -nbB admin "password"
-    #       - 'admin:$2y$05$Whui4glE49NPi31X3PyMF.ZbuyV59QvU3NLO24m0sGItKKNTTVpUW'
