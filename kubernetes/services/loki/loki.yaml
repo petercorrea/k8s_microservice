@@ -46,3 +46,32 @@ spec:
       targetPort: 3100
   selector:
     app: loki
+
+---
+
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: loki
+  namespace: default
+spec:
+  podSelector:
+    matchLabels:
+      app: loki
+  policyTypes:
+    - Ingress
+    - Egress
+  ingress:
+    - from:
+        - podSelector:
+            matchLabels:
+              app: promtail
+        - podSelector:
+            matchLabels:
+              app: grafana
+  egress:
+    - to:
+        - podSelector:
+            matchLabels:
+              app: grafana

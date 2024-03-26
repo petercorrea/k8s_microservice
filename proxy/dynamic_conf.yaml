@@ -3,7 +3,7 @@
 http:
   routers:
     traefik-dashboard:
-      rule: 'Host(`staging.stackheap.io`) && PathPrefix(`/dashboard`)'
+      rule: 'Host(`staging.stackheap.io`) && (PathPrefix(`/dashboard`) || PathPrefix(`/api`))'
       service: 'api@internal'
       entryPoints:
         - 'websecure'
@@ -31,5 +31,5 @@ http:
     stackheap-service:
       loadBalancer:
         servers:
-          - url: 'http://137.184.138.106:30080'
-          - url: 'http://137.184.204.155:30080'
+          - url: 'https://137.184.138.106:30443'
+          - url: 'https://137.184.204.155:30443'

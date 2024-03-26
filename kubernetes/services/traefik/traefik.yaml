@@ -22,15 +22,12 @@ spec:
           args:
             - --log.level=DEBUG
             - --api
-            - --api.insecure=true
+            # - --api.insecure=true
             - --accesslog
             - --entrypoints.web.Address=:80
             - --entrypoints.websecure.Address=:443
             - --providers.kubernetescrd
-            # - --certificatesresolvers.myresolver.acme.httpchallenge=true
-            # - --certificatesresolvers.myresolver.acme.httpchallenge.entrypoint=web
-            # - --certificatesresolvers.myresolver.acme.email=you@example.com
-            # - --certificatesresolvers.myresolver.acme.storage=/acme.json
+            - '--entrypoints.websecure.http.tls=true'
           ports:
             - name: web
               containerPort: 80
@@ -38,6 +35,7 @@ spec:
               containerPort: 443
             - name: admin
               containerPort: 8080
+
 ---
 apiVersion: v1
 kind: Service
@@ -63,20 +61,45 @@ spec:
     app: traefik
 
 ---
-apiVersion: traefik.io/v1alpha1
+apiVersion: traefik.containo.us/v1alpha1
 kind: IngressRoute
 metadata:
   name: traefik-dashboard
   namespace: default
 spec:
   entryPoints:
-    - web
+    - websecure
   routes:
-    - match: PathPrefix(`/dashboard`) || PathPrefix(`/api`)
+    - match: Host(`localhost`) && (PathPrefix(`/dashboard`) || PathPrefix(`/api`))
       kind: Rule
       services:
         - name: api@internal
           kind: TraefikService
+  tls:
+    secretName: auth-cert
+
+# ---
+# apiVersion: networking.k8s.io/v1
+# kind: NetworkPolicy
+# metadata:
+#   name: traefik-accepts-internal-and-proxy-only
+#   namespace: default
+# spec:
+#   podSelector:
+#     matchLabels:
+#       app: traefik
+#   policyTypes:
+#     - Ingress
+#     - Egress
+#   ingress:
+#     - from:
+#         - ipBlock:
+#             cidr: 146.190.68.212/32 # Update to proxy's IP address
+#     - from:
+#         - namespaceSelector: {} # Allows all internal traffic
+#   egress:
+#     - to:
+#         - namespaceSelector: {} # Allows traffic to all internal namespaces
 
 ---
 apiVersion: v1

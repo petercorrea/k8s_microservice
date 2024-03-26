@@ -14,13 +14,15 @@ spec:
     spec:
       containers:
         - name: auth
-          image: pmcorrea/auth:latest
+          command: ['/bin/sh']
+          args: ['-c', 'while true; do sleep 30; done']
+          image: pmcorrea/auth:staging
           imagePullPolicy: Always
           ports:
-            - containerPort: 3000
+            - containerPort: 443
           env:
             - name: PORT
-              value: '9000'
+              value: '443'
             - name: PROD
               value: 'true'
             - name: JWT_SECRET
@@ -44,13 +46,13 @@ spec:
                   name: api-secrets
                   key: CLIENT_SECRET
           volumeMounts:
-            - name: tls
-              mountPath: '/app/packages/auth/tls'
+            - name: cert-volume
+              mountPath: '/app/packages/auth/tls/'
               readOnly: true
       volumes:
-        - name: tls
+        - name: cert-volume
           secret:
-            secretName: tls-secret
+            secretName: auth-cert
 ---
 apiVersion: v1
 kind: Service
@@ -58,8 +60,8 @@ metadata:
   name: auth
 spec:
   ports:
-    - port: 3000
-      targetPort: 3000
+    - port: 443
+      targetPort: 443
   selector:
     app: auth
 
@@ -78,4 +80,17 @@ spec:
         - name: auth
           port: 443
   tls:
-    secretName: tls-secret
+    secretName: auth-cert
+
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: api-secrets
+  namespace: default
+type: Opaque
+stringData:
+  JWT_SECRET: c29tZV9zZWNyZXQ=
+  COOKIE_SECRET: c29tZV9zZWNyZXQ=
+  CLIENT_ID: NTE2NDA2OTMxMzUyLWtqaWd1MnBzYjlzcGtkOGZkc3Nsa2JianQzNGJwYzh2LmFwcHMuZ29vZ2xldXNlcmNvbnRlbnQuY29t
+  CLIENT_SECRET: R09DU1BYLU05X3RZZW10THlHQ1hOZ3JrckpicUt5cmN6bE4=
