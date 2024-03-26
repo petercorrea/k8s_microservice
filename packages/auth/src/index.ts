@@ -26,9 +26,13 @@ import { public_routes } from './routes/public.js';
 import { type IGoogleUserInfo } from './types/auth.js';
 import { configure_environment } from './utils/helpers.js';
 
+console.log('logging');
+console.log(process.env.COOKIE_SECRET, process.env.JWT_SECRET);
+
 // Load Configuration
 const { env } = configure_environment();
 const is_dev = env === 'DEV';
+const is_prod = env === 'PROD';
 
 // Err if envs are not set
 if (process.env.COOKIE_SECRET == null || process.env.JWT_SECRET == null) {
@@ -38,13 +42,18 @@ if (process.env.COOKIE_SECRET == null || process.env.JWT_SECRET == null) {
 const FILENAME = fileURLToPath(import.meta.url);
 const DIRNAME = path.dirname(FILENAME);
 
+console.log('configuring server');
 const server_options = {
-  http2: true,
-  https: {
-    allowHTTP1: true, // Fallback support for HTTP/1
-    key: fs.readFileSync(path.join(DIRNAME, '../tls/tls.key')),
-    cert: fs.readFileSync(path.join(DIRNAME, '../tls/tls.crt')),
-  },
+  http2: is_prod,
+  ...(is_prod
+    ? {
+        https: {
+          allowHTTP1: true, // Fallback support for HTTP/1
+          key: fs.readFileSync(path.join(DIRNAME, '../tls/tls.key')),
+          cert: fs.readFileSync(path.join(DIRNAME, '../tls/tls.crt')),
+        },
+      }
+    : {}),
   ...(is_dev &&
     process.stdout.isTTY && {
       logger: {
@@ -55,6 +64,7 @@ const server_options = {
       },
     }),
 };
+console.log('configuring server done');
 
 export const app: FastifyInstance =
   fastify(server_options).withTypeProvider<TypeBoxTypeProvider>();
