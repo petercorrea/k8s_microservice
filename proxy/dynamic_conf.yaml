@@ -2,26 +2,34 @@
 # update the urls to the current worker nodes
 http:
   routers:
-    proxy-router:
-      rule: 'Host(`staging.stackheap.io`)'
-      service: 'traefik-service'
+    traefik-dashboard:
+      rule: 'Host(`staging.stackheap.io`) && PathPrefix(`/dashboard`)'
+      service: 'api@internal'
       entryPoints:
-        - 'web'
         - 'websecure'
-      middlewares:
-        - 'httpsRedirect'
       tls:
-        certResolver: acme-resolver # Use the ACME resolver for automatic certificate handling
+        certResolver: 'acme-staging'
+      middlewares:
+        - 'auth'
+
+    stackheap:
+      rule: 'Host(`staging.stackheap.io`)'
+      service: 'stackheap-service'
+      entryPoints:
+        - 'websecure'
+      tls:
+        certResolver: 'acme-staging'
+
+  middlewares:
+    auth:
+      basicAuth:
+        # htpasswd -nbB admin password (bcrypt)
+        users:
+          - 'admin:$2y$05$c1qspNW2kgnnVWo8S/9HD.UBJ/RyOU08Q2mw.4opmb3w8e5Q0/q5.'
 
   services:
-    traefik-service:
+    stackheap-service:
       loadBalancer:
         servers:
           - url: 'http://137.184.138.106:30080'
           - url: 'http://137.184.204.155:30080'
-
-  middlewares:
-    httpsRedirect:
-      redirectScheme:
-        scheme: https
-        permanent: true

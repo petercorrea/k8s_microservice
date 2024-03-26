@@ -5,16 +5,15 @@ services:
     image: traefik:v2.11
     command:
       - '--log.level=DEBUG'
-      - '--api.insecure=true'
+      # - '--api.insecure=true'
       - '--providers.docker=false'
       - '--providers.file.filename=/etc/traefik/dynamic_conf.yaml'
       - '--entrypoints.web.address=:80'
       - '--entrypoints.websecure.address=:443'
+      - '--entrypoints.websecure.http.tls.certResolver=acme-resolver'
       - '--certificatesResolvers.acme-resolver.acme.email=pmcorrea@me.com'
       - '--certificatesResolvers.acme-resolver.acme.storage=/etc/traefik/acme.json'
       - '--certificatesResolvers.acme-resolver.acme.httpChallenge.entryPoint=web'
-      - '--entrypoints.websecure.http.tls.certResolver=acme-resolver'
-      # - --certresolv.myresolver.acme.storage=/shared/acme.json
     ports:
       - '80:80'
       - '443:443'
