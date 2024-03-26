@@ -14,10 +14,12 @@ spec:
     spec:
       containers:
         - name: hello-from-pod
-          image: pmcorrea/hello-from-pod-staging:latest
+          image: pmcorrea/hello-from-pod:staging
           ports:
-            - containerPort: 3000
+            - containerPort: 443
           env:
+            - name: PORT
+              value: 443
             - name: POD_IP
               valueFrom:
                 fieldRef:
@@ -34,8 +36,8 @@ metadata:
   name: hello-from-pod-service
 spec:
   ports:
-    - port: 80
-      targetPort: 3000
+    - port: 443
+      targetPort: 443
   selector:
     app: hello-from-pod
 
@@ -47,10 +49,10 @@ metadata:
   namespace: default
 spec:
   entryPoints:
-    - web
+    - websecure
   routes:
     - match: Host(`staging.stackheap.io`) && PathPrefix(`/hello`)
       kind: Rule
       services:
         - name: hello-from-pod-service
-          port: 80
+          port: 443
