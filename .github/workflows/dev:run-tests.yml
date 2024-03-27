@@ -27,6 +27,19 @@ jobs:
       - name: Install Lerna
         run: npm install --global lerna
 
-      - name: Run tests
-        if: github.event.push.paths == 'packages/${{ matrix.package }}/**'
-        run: lerna run --scope ${{ matrix.package }} build && lerna run --scope ${{ matrix.package }} test
+      - name: Install packages
+        run: npm install
+
+      - name: Check for changed packages
+        id: changed
+        uses: dorny/paths-filter@v3
+        with:
+          filters: |
+            ${{ matrix.package }}:
+              - 'packages/${{ matrix.package }}/**'
+
+      - name: Run tests if changes are detected
+        if: steps.changed.outputs.${{ matrix.package }} == 'true'
+        run: |
+          lerna run --scope ${{ matrix.package }} build
+          lerna run --scope ${{ matrix.package }} test
