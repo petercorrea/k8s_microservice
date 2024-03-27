@@ -13,7 +13,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        package: [auth-service, frontend] # keep up to date
+        package: [auth, frontend] # keep up to date
 
     steps:
       - name: Check out the code
