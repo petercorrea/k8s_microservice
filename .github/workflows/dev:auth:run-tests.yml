@@ -5,7 +5,7 @@ on:
     branches:
       - dev
     paths:
-      - 'packages/auth'
+      - 'packages/auth/**'
 
 jobs:
   build:

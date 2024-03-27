@@ -5,7 +5,7 @@ on:
     branches:
       - dev
     paths:
-      - 'packages/frontend'
+      - 'packages/frontend/**'
 
 jobs:
   build:
