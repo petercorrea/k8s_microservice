@@ -12,8 +12,8 @@ jobs:
     name: 'Dev: Run tests'
     runs-on: ubuntu-latest
     strategy:
+      fail-fast: false
       matrix:
-         fail-fast: false
         package: [auth, frontend] # keep up to date
 
     steps:
