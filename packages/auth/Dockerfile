@@ -17,4 +17,4 @@ RUN npm run build
 
 USER docker
 
-CMD ["npm", "run", "start",]
+CMD ["npm", "run", "start"]
