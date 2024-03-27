@@ -10,15 +10,15 @@ spec:
 apiVersion: cert-manager.io/v1
 kind: Certificate
 metadata:
-  name: auth-cert
+  name: selfsigned-cert
   namespace: default
 spec:
-  secretName: auth-cert
+  secretName: selfsigned-cert
   duration: 2160h # 90 days
   renewBefore: 360h # 15 days before expiry
-  commonName: 'auth.default.svc.cluster.local'
   dnsNames:
-    - 'auth.default.svc.cluster.local'
+    - '*.default.svc.cluster.local'
+    - '*.default'
   issuerRef:
     name: selfsigned-issuer
     kind: ClusterIssuer

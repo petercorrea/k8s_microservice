@@ -27,7 +27,8 @@ spec:
             - --entrypoints.web.Address=:80
             - --entrypoints.websecure.Address=:443
             - --providers.kubernetescrd
-            - '--entrypoints.websecure.http.tls=true'
+            - --entrypoints.websecure.http.tls=true
+            - --entrypoints.websecure.http.tls.passthrough=true
           ports:
             - name: web
               containerPort: 80
@@ -62,21 +63,30 @@ spec:
 
 ---
 apiVersion: traefik.containo.us/v1alpha1
+kind: ServersTransport
+metadata:
+  name: tls-options
+  namespace: default
+spec:
+  insecureSkipVerify: true
+
+---
+apiVersion: traefik.containo.us/v1alpha1
 kind: IngressRoute
 metadata:
   name: traefik-dashboard
   namespace: default
 spec:
   entryPoints:
-    - websecure
+    - web
   routes:
     - match: Host(`localhost`) && (PathPrefix(`/dashboard`) || PathPrefix(`/api`))
       kind: Rule
       services:
         - name: api@internal
           kind: TraefikService
-  tls:
-    secretName: auth-cert
+  # tls:
+  #   secretName: selfsigned-cert
 
 # ---
 # apiVersion: networking.k8s.io/v1

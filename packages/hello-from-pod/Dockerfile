@@ -1,5 +1,5 @@
 # Use a Node base image
-FROM node:14
+FROM node:21-alpine
 
 # Create app directory
 WORKDIR /usr/src/app

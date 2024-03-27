@@ -14,15 +14,15 @@ spec:
     spec:
       containers:
         - name: auth
-          command: ['/bin/sh']
-          args: ['-c', 'while true; do sleep 30; done']
+          # command: ['/bin/sh']
+          # args: ['-c', 'while true; do sleep 30; done']
           image: pmcorrea/auth:staging
           imagePullPolicy: Always
           ports:
-            - containerPort: 443
+            - containerPort: 9443
           env:
             - name: PORT
-              value: '443'
+              value: '9443'
             - name: PROD
               value: 'true'
             - name: JWT_SECRET
@@ -52,7 +52,7 @@ spec:
       volumes:
         - name: cert-volume
           secret:
-            secretName: auth-cert
+            secretName: selfsigned-cert
 ---
 apiVersion: v1
 kind: Service
@@ -61,7 +61,7 @@ metadata:
 spec:
   ports:
     - port: 443
-      targetPort: 443
+      targetPort: 9443
   selector:
     app: auth
 
@@ -80,7 +80,7 @@ spec:
         - name: auth
           port: 443
   tls:
-    secretName: auth-cert
+    secretName: selfsigned-cert
 
 ---
 apiVersion: v1

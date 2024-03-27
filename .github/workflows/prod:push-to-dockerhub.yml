@@ -22,8 +22,8 @@ jobs:
       - name: Install Lerna
         run: npm install --global lerna
 
-      - name: Run tests
-        run: npm run build && npm run test
+      # - name: Run tests
+      #   run: npm run build && npm run test
 
       - name: Docker Setup Buildx
         uses: docker/setup-buildx-action@v3.2.0

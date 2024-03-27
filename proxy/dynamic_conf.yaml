@@ -15,7 +15,9 @@ http:
     stackheap:
       rule: 'Host(`staging.stackheap.io`)'
       service: 'stackheap-service'
+      # redirections are on the static config
       entryPoints:
+        - 'web'
         - 'websecure'
       tls:
         certResolver: 'acme-staging'
