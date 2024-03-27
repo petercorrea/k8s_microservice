@@ -32,7 +32,7 @@ jobs:
           echo "CHANGED_PACKAGES=$(lerna changed --all --loglevel silent)" >> $GITHUB_ENV
 
       - name: Run tests in changed packages
-        if: env.CHANGED_PACKAGES != ''
+        if: ${{ env.CHANGED_PACKAGES != '' }}
         run: |
           echo "Changed packages: $CHANGED_PACKAGES"
           lerna run test --since main --concurrency 2
