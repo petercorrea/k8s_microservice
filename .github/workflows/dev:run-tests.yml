@@ -23,8 +23,19 @@ jobs:
       - name: Install Lerna
         run: npm install --global lerna
 
-      - name: Run tests
-        run: npm run build && npm run test
+      - name: Install project
+        run: npm install
+
+      - name: Find changed packages
+        id: changed
+        run: |
+          echo "CHANGED_PACKAGES=$(lerna changed --all --loglevel silent)" >> $GITHUB_ENV
+
+      - name: Run tests in changed packages
+        if: ${{ env.CHANGED_PACKAGES != '' }}
+        run: |
+          echo "Changed packages: $CHANGED_PACKAGES"
+          lerna run test --since main --concurrency 2
 
       # - name: Docker Setup Buildx
       #   uses: docker/setup-buildx-action@v3.2.0
