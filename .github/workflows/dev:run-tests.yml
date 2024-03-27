@@ -1,4 +1,4 @@
-name: 'Staging: Build and Push Docker images'
+name: 'Dev: Run tests'
 
 on:
   push:
@@ -9,11 +9,11 @@ on:
 
 jobs:
   build:
-    name: 'Staging: Build and Push Docker images'
+    name: 'Dev: Run tests'
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        package: [auth, frontend] # keep up to date
+        package: [auth-service, frontend] # keep up to date
 
     steps:
       - name: Check out the code
@@ -29,4 +29,4 @@ jobs:
 
       - name: Run tests
         if: github.event.push.paths == 'packages/${{ matrix.package }}/**'
-        run: lerna run build --scope=${{ matrix.package }} && lerna run test --scope=${{ matrix.package }}
+        run: lerna run --scope ${{ matrix.package }} build && lerna run --scope ${{ matrix.package }} test
