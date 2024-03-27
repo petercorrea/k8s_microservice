@@ -1,4 +1,4 @@
-name: 'Dev: Run tests'
+name: 'Dev:Auth Run tests'
 
 on:
   push:
@@ -28,6 +28,17 @@ jobs:
         run: npm install
 
       - name: Run tests
+        env:
+          JWT_SECRET: some_secret
+          COOKIE_SECRET: some_secret
+          PORT: 9000
+          DATABASE_URL: postgresql://user:password@localhost:5432/mydb
+          CLIENT_ID: ${{ secrets.CLIENT_ID }}
+          CLIENT_SECRET: ${{ secrets.CLIENT_SECRET }}
+          LOG_LEVEL: trace
+          SWAGGER_ENABLED: true
+          PINO: pino-pretty
+          DEV: true
         run: |
           lerna run --scope auth build
           lerna run --scope auth test
