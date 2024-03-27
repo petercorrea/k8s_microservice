@@ -1,0 +1,32 @@
+name: 'Staging: Build and Push Docker images'
+
+on:
+  push:
+    branches:
+      - dev
+    paths:
+      - 'packages/**'
+
+jobs:
+  build:
+    name: 'Staging: Build and Push Docker images'
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        package: [auth, frontend] # keep up to date
+
+    steps:
+      - name: Check out the code
+        uses: actions/checkout@v4.1.1
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4.0.2
+        with:
+          node-version: '21'
+
+      - name: Install Lerna
+        run: npm install --global lerna
+
+      - name: Run tests
+        if: github.event.push.paths == 'packages/${{ matrix.package }}/**'
+        run: lerna run build --scope=${{ matrix.package }} && lerna run test --scope=${{ matrix.package }}
