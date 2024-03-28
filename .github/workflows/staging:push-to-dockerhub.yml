@@ -1,7 +1,7 @@
 name: 'Staging: Build and Push Docker images'
 
 on:
-  pull_request:
+  push:
     branches:
       - staging
 
@@ -43,7 +43,7 @@ jobs:
           export TAG=staging
           # export TAG=${{ github.sha }}
           echo "TAG=${TAG}" > .env
-          docker-compose -f .github/docker-compose.staging.yml build
-          docker-compose -f .github/docker-compose.staging.yml push
+          docker-compose -f docker-compose.staging.yml build
+          docker-compose -f docker-compose.staging.yml push
         env:
           IMAGE_TAG: $TAG
