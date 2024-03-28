@@ -1,6 +1,3 @@
-git checkout main && git pull
-git checkout staging && git pull
-git checkout dev && git merge staging
 npm run lint
 npm run type-check
 npm run test

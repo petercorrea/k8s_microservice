@@ -1,11 +1,9 @@
-name: 'Dev:Auth Run tests'
+name: 'Dev: Run tests'
 
 on:
   push:
     branches:
       - dev
-    paths:
-      - 'packages/auth/**'
 
 jobs:
   build:
@@ -27,7 +25,7 @@ jobs:
       - name: Install packages
         run: npm install
 
-      - name: Run tests
+      - name: Run auth tests
         env:
           JWT_SECRET: some_secret
           COOKIE_SECRET: some_secret
@@ -42,3 +40,8 @@ jobs:
         run: |
           lerna run --scope auth build
           lerna run --scope auth test
+
+      - name: Run frontend tests
+        run: |
+          lerna run --scope frontend build
+          lerna run --scope frontend test
