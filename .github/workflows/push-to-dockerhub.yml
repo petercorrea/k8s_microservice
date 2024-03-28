@@ -1,18 +1,15 @@
-name: 'Prod: Build and Push Docker images'
+name: 'Build and Push Docker images'
 
 on:
-  workflow_run:
-    workflows: ['Prod: Run tests']
-    types:
-      - completed
+  push:
     branches:
+      - staging
       - main
 
 jobs:
   build:
-    name: 'Prod: Build and Push Docker images'
+    name: 'Build and Push Docker images'
     runs-on: ubuntu-latest
-    if: ${{ github.event.workflow_run.conclusion == 'success' }}
 
     steps:
       - name: Check out the code
@@ -42,10 +39,20 @@ jobs:
         env:
           DOCKER_BUILDKIT: 1
 
-      - name: Build and push Docker images
+      - name: 'Staging: Build and push Docker images'
+        if: ${{ github.ref == 'refs/heads/staging' }}
+        run: |
+          export TAG=staging
+          echo "TAG=${TAG}" > .env
+          docker-compose -f docker-compose.staging.yml build
+          docker-compose -f docker-compose.staging.yml push
+        env:
+          IMAGE_TAG: $TAG
+
+      - name: 'Prod: Build and push Docker images'
+        if: ${{ github.ref == 'refs/heads/main' }}
         run: |
           export TAG=latest
-          # export TAG=${{ github.sha }}
           echo "TAG=${TAG}" > .env
           docker-compose -f docker-compose.prod.yml build
           docker-compose -f docker-compose.prod.yml push

@@ -1,13 +1,17 @@
-name: 'Prod: Run tests'
+name: 'Run tests'
 
 on:
+  push:
+    branches:
+      - dev
+      - staging
   pull_request:
     branches:
       - main
 
 jobs:
   build:
-    name: 'Prod: Run tests'
+    name: 'Run tests'
     runs-on: ubuntu-latest
 
     steps:
