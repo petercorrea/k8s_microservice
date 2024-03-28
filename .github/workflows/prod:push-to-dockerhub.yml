@@ -1,7 +1,10 @@
 name: 'Prod: Build and Push Docker images'
 
 on:
-  pull_request:
+  workflow_run:
+    workflows: ['Prod: Run tests']
+    types:
+      - completed
     branches:
       - main
 
@@ -9,6 +12,7 @@ jobs:
   build:
     name: 'Prod: Build and Push Docker images'
     runs-on: ubuntu-latest
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
 
     steps:
       - name: Check out the code
@@ -43,7 +47,7 @@ jobs:
           export TAG=latest
           # export TAG=${{ github.sha }}
           echo "TAG=${TAG}" > .env
-          docker-compose -f .github/docker-compose.prod.yml build
-          docker-compose -f .github/docker-compose.prod.yml push
+          docker-compose -f docker-compose.prod.yml build
+          docker-compose -f docker-compose.prod.yml push
         env:
           IMAGE_TAG: $TAG
