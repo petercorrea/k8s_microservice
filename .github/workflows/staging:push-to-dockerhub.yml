@@ -2,12 +2,7 @@ name: 'Staging: Build and Push Docker images'
 
 on:
   workflow_run:
-    workflows:
-      [
-        'Enforce PR Title Format',
-        'Staging:Auth Run tests',
-        'Staging:Frontend Run tests',
-      ]
+    workflows: ['Staging: Run tests']
     types:
       - completed
     branches:
