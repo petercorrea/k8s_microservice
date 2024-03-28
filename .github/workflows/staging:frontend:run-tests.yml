@@ -3,7 +3,7 @@ name: 'Staging:Frontend Run tests'
 on:
   push:
     branches:
-      - dev
+      - staging
     paths:
       - 'packages/frontend/**'
 

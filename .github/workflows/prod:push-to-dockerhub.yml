@@ -11,7 +11,7 @@ on:
     types:
       - completed
     branches:
-      - staging
+      - main
 
 jobs:
   build:

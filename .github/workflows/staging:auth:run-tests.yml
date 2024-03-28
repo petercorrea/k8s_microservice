@@ -3,7 +3,7 @@ name: 'Staging:Auth Run tests'
 on:
   push:
     branches:
-      - dev
+      - staging
     paths:
       - 'packages/auth/**'
 
