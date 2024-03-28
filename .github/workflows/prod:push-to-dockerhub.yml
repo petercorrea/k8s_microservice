@@ -1,10 +1,7 @@
 name: 'Prod: Build and Push Docker images'
 
 on:
-  workflow_run:
-    workflows: ['Prod: Run tests']
-    types:
-      - completed
+  pull_request:
     branches:
       - main
 
@@ -12,7 +9,6 @@ jobs:
   build:
     name: 'Prod: Build and Push Docker images'
     runs-on: ubuntu-latest
-    if: ${{ github.event.workflow_run.conclusion == 'success' }}
 
     steps:
       - name: Check out the code

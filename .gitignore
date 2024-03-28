@@ -137,6 +137,7 @@ ignore
 ignore/*
 
 kubeadm_join_cmd.sh
+*.csr
 *.crt
 *.cert
 *.key

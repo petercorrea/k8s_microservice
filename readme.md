@@ -37,7 +37,7 @@ In progress.
       3. `ansible-playbook -i ./inventory.ini ./copy-files.yml`
 7. Open Dashboards
    1. Traefik Ingress Controller dashboard
-      1. `kubectl port-forward svc/traefik 9000:8080`
+      1. `kubectl port-forward svc/traefik 9000:443`
       2. `ssh -L 9000:localhost:9000 root@ip`
       3. `http://localhost:9000/dashboard/`
    2. Grafana dashboard
@@ -49,6 +49,7 @@ In progress.
    3. Proxy Traefrik dashboard
       1. `http://<domain>:8080/dashboard/#/`
 8. Log into master node and apply manifests
+   1. Configure cluster admin
 
 ## Non-Functional Features
 
