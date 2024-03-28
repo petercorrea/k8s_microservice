@@ -1,14 +1,23 @@
 name: 'Prod: Build and Push Docker images'
 
 on:
-  push:
+  workflow_run:
+    workflows:
+      [
+        'Enforce PR Title Format',
+        'Prod:Auth Run tests',
+        'Prod:Frontend Run tests',
+      ]
+    types:
+      - completed
     branches:
-      - main
+      - staging
 
 jobs:
   build:
     name: 'Prod: Build and Push Docker images'
     runs-on: ubuntu-latest
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
 
     steps:
       - name: Check out the code
@@ -21,9 +30,6 @@ jobs:
 
       - name: Install Lerna
         run: npm install --global lerna
-
-      # - name: Run tests
-      #   run: npm run build && npm run test
 
       - name: Docker Setup Buildx
         uses: docker/setup-buildx-action@v3.2.0
@@ -46,7 +52,7 @@ jobs:
           export TAG=latest
           # export TAG=${{ github.sha }}
           echo "TAG=${TAG}" > .env
-          docker-compose -f docker-compose.prod.yml build
-          docker-compose -f docker-compose.prod.yml push
+          docker-compose -f .github/docker-compose.prod.yml build
+          docker-compose -f .github/docker-compose.prod.yml push
         env:
           IMAGE_TAG: $TAG
