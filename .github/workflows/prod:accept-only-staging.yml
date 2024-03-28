@@ -1,4 +1,4 @@
-name: Main only accepts merges from staging
+name: Main Only Accepts Merges From Staging
 
 on:
   pull_request:

@@ -28,7 +28,6 @@ spec:
             - --entrypoints.websecure.Address=:443
             - --providers.kubernetescrd
             - --entrypoints.websecure.http.tls=true
-            - --entrypoints.websecure.http.tls.passthrough=true
           ports:
             - name: web
               containerPort: 80

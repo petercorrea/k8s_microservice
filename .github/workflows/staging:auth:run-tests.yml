@@ -1,0 +1,44 @@
+name: 'Staging:Auth Run tests'
+
+on:
+  push:
+    branches:
+      - staging
+    paths:
+      - 'packages/auth/**'
+
+jobs:
+  build:
+    name: 'Staging:Auth Run tests'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out the code
+        uses: actions/checkout@v4.1.1
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4.0.2
+        with:
+          node-version: '21'
+
+      - name: Install Lerna
+        run: npm install --global lerna
+
+      - name: Install packages
+        run: npm install
+
+      - name: Run tests
+        env:
+          JWT_SECRET: some_secret
+          COOKIE_SECRET: some_secret
+          PORT: 9000
+          DATABASE_URL: postgresql://user:password@localhost:5432/mydb
+          CLIENT_ID: ${{ secrets.CLIENT_ID }}
+          CLIENT_SECRET: ${{ secrets.CLIENT_SECRET }}
+          LOG_LEVEL: trace
+          SWAGGER_ENABLED: true
+          PINO: pino-pretty
+          DEV: true
+        run: |
+          lerna run --scope auth build
+          lerna run --scope auth test
