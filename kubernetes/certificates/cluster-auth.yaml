@@ -1,0 +1,48 @@
+# openssl genrsa -out k8s-user.key 2048
+# openssl req -new -key k8s-user.key -out k8s-user.csr -subj "/CN=k8s-user/O=my_organization"
+
+# kubectl certificate approve k8s-user
+# kubectl get csr k8s-user -o jsonpath='{.status.certificate}' | base64 --decode > k8s-user.crt
+# kubectl config set-credentials peter --client-certificate=k8s-user.crt --client-key=k8s-user.key
+# kubectl config set-context k8s-user-context --cluster=kubernetes --namespace=default --user=peter
+# kubectl config use-context k8s-user-context
+
+apiVersion: certificates.k8s.io/v1
+kind: CertificateSigningRequest
+metadata:
+  name: k8s-user
+spec:
+  # cat k8s-user.csr | base64 | tr -d '\n'
+  request: LS0tLS1CRUdJTiBDRVJUSUZJQ0FURSBSRVFVRVNULS0tLS0KTUlJQ2NqQ0NBVm9DQVFBd0xURVJNQThHQTFVRUF3d0lhemh6TFhWelpYSXhHREFXQmdOVkJBb01EMjE1WDI5eQpaMkZ1YVhwaGRHbHZiakNDQVNJd0RRWUpLb1pJaHZjTkFRRUJCUUFEZ2dFUEFEQ0NBUW9DZ2dFQkFLTUZhVWhDCjJLQjM2TEEwazJzbUltWU9SRmlpOVlwbWxxZ1JjWWJSK2Y0R0Mxb21WK0w4MjM4a3p0emdJdXN1YVI1VExOMFUKY3ROYlJ4Y3RjbTZ6MjkxbUFJdFJRem53T0RURUtZcEJEZm9YZUgzN3hNTUVDbFl6TWFLNmRXdHQ1VWo2aWFOZgpLZktVdE5TUjRCcmMrY2k1T1MzeWROaXdjc2V5NFBwUlFITzljc1hFMERKcmozMUtjWnA0Ymh2VEhMYnBNeGpSCnNoaE5TNGtWckFqTG41d3loQ2MxQXA1dXVDSnQzVmZjYU93cS9KN3NOYmJaK2VtTGhpYmtRZXRuQ2didHAxeGQKWFNEaGQvcE5JZ2VySVpiTkRUL3g4M3Rtelg2MDA2NEZ3TFBndlUvYnJTdXJTWDJWeW0zNk9KZzkzaWkxVk1iRAoxNjU5S0FQZ2tObVNRa2tDQXdFQUFhQUFNQTBHQ1NxR1NJYjNEUUVCQ3dVQUE0SUJBUUFaMlFudWxkQVJJdms0CmlBLzFybE15TXBrNjZSNlVqN0tpdDdFQ0NPaXZGbWdsamY3M2tNd2ZUd0J0YVJzSEY4SXBiYVIzbjJCMGF3SDAKRVFzbm5HR01aM3QzREpJQmpLeGNsL3hkaWdhOGliZ1orc3VIekdWcVJOU1BxamRKblRDR1RNd0JDNGN1YlJwRgpvVzlTTEZPWUF1SUlvY2hJb2piM3U0NDRTVUo4S0o2TERuM3RpWHZ5bGpYb0dla3U4a1JEWnlWMFVEUGxRdE9GCjZqM0sxZWtKcTlKN2tTbU9yYkpyeFYwV3lsL1FqS1VNd2tTNDgwL1ZMM0xXd0xITW1Gbnpva3Vla2lVb2tHZ1kKVjlkbE9GMld6THhxZ0xiYkJoM3JBWGFvYS9MQmhiYWUzckNLS3U3Vlc0MmExYkxLT0VNeWpRZVdIU0E4ckUvcQpWeG9tRHFtRwotLS0tLUVORCBDRVJUSUZJQ0FURSBSRVFVRVNULS0tLS0K
+  signerName: kubernetes.io/kube-apiserver-client
+  usages:
+    - client auth
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: k8s-user-admin-binding
+  namespace: default
+subjects:
+  - kind: User
+    name: k8s-user
+    apiGroup: rbac.authorization.k8s.io
+roleRef:
+  kind: ClusterRole
+  name: admin
+  apiGroup: rbac.authorization.k8s.io
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: k8s-user-cluster-admin-binding
+subjects:
+  - kind: User
+    name: k8s-user
+    apiGroup: rbac.authorization.k8s.io
+roleRef:
+  kind: ClusterRole
+  name: cluster-admin
+  apiGroup: rbac.authorization.k8s.io
