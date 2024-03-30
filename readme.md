@@ -1,12 +1,12 @@
 # Microservice Boilerplate
 
-Boilerplate to setup a microservice based app
+Boilerplate to setup a microservice based app on DigitalOcean.
 
 ## Status
 
 In progress.
 
-## Build Steps
+## Development Steps
 
 1. Build Docker base image `npm run docker:build:base`
 2. Build and spin up containers `npm run docker:up`
@@ -35,8 +35,8 @@ In progress.
       1. `ansible-playbook -i ./inventory.ini ./setup-k8s.yml`
       2. `ansible-playbook -i ./inventory.ini ./setup-proxy.yml`
       3. `ansible-playbook -i ./inventory.ini ./copy-files.yml`
-7. Open Dashboards
-   1. Traefik Ingress Controller dashboard
+7. Open dashboards
+   1. Traefik ingress controller dashboard
       1. `kubectl port-forward svc/traefik 9000:443`
       2. `ssh -L 9000:localhost:9000 root@ip`
       3. `http://localhost:9000/dashboard/`
@@ -46,12 +46,13 @@ In progress.
       3. `http://localhost:3100/dashboard/`
       4. Setup Loki Data Connection
          1. `http://loki:3100`
-   3. Proxy Traefrik dashboard
+   3. Traefrik proxy dashboard
       1. `http://<domain>:8080/dashboard/#/`
 8. Log into master node and apply manifests
-   1. Configure cluster admin
+   1. Configure local kubectl config
+   2. Create and approve certs for cluster admin
 
-## Non-Functional Features
+## Features
 
 ### Infrastructure and DevOps
 

@@ -5,6 +5,9 @@ services:
     image: traefik:v2.11
     command:
       - '--log.level=DEBUG'
+      - '--log.format=json'
+      - '--accesslog.format=json'
+      - '--accesslog.filepath=/var/log/access.log'
       # - '--api.insecure=true'
       - '--api.dashboard=true'
       - '--providers.docker=false'
@@ -24,4 +27,13 @@ services:
       - '443:443'
       - '8080:8080'
     volumes:
-      - './:/etc/traefik/'
+      - './traefik/:/etc/traefik/'
+      - '/var/log:/var/log'
+
+  promtail:
+    image: grafana/promtail:latest
+    volumes:
+      - './promtail/:/etc/promtail/'
+      - '/var/log:/var/log'
+    command:
+      - '-config.file=/etc/promtail/promtail-config.yaml'
