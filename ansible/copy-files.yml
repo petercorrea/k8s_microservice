@@ -38,6 +38,10 @@
               watch kubectl get node,ingressroute,service,pods,pvc,deployment,statefulset,networkpolicy,secret -n default -o wide
           }
 
+           k:all:kube() {
+              watch kubectl get node,ingressroute,service,pods,pvc,deployment,statefulset,networkpolicy,secret -n kube-system -o wide
+          }
+
           k:pf:t() {
               kubectl port-forward svc/traefik 9000:8080
           }

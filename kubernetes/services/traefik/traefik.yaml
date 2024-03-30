@@ -100,28 +100,28 @@ data:
   users: YWRtaW46JDJ5JDA1JGMxcXNwTlcya2dublZXbzhTLzlIRC5VQkovUnlPVTA4UTJtdy40b3BtYjN3OGU1UTAvcTUu
 type: Opaque
 
-# ---
-# apiVersion: networking.k8s.io/v1
-# kind: NetworkPolicy
-# metadata:
-#   name: traefik-accepts-internal-and-proxy-only
-#   namespace: default
-# spec:
-#   podSelector:
-#     matchLabels:
-#       app: traefik
-#   policyTypes:
-#     - Ingress
-#     - Egress
-#   ingress:
-#     - from:
-#         - ipBlock:
-#             cidr: 146.190.68.212/32 # Update to proxy's IP address
-#     - from:
-#         - namespaceSelector: {} # Allows all internal traffic
-#   egress:
-#     - to:
-#         - namespaceSelector: {} # Allows traffic to all internal namespaces
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: traefik-accepts-internal-and-proxy-only
+  namespace: default
+spec:
+  podSelector:
+    matchLabels:
+      app: traefik
+  policyTypes:
+    - Ingress
+    - Egress
+  ingress:
+    - from:
+        - ipBlock:
+            cidr: 146.190.68.212/32 # Allow traffic from proxy
+    - from:
+        - namespaceSelector: {} # Allows all internal traffic
+  egress:
+    - to:
+        - namespaceSelector: {} # Allows traffic to all internal namespaces
 
 ---
 apiVersion: v1

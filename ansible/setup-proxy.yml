@@ -96,14 +96,14 @@
         
     - name: Set specific permissions for acme.json
       ansible.builtin.file:
-        path: ~/proxy/acme.json
+        path: ~/proxy/traefik/acme.json
         owner: root
         group: root
         mode: '600'
 
     - name: Set specific permissions for acme-staging.json
       ansible.builtin.file:
-        path: ~/proxy/acme-staging.json
+        path: ~/proxy/traefik/acme-staging.json
         owner: root
         group: root
         mode: '600'
