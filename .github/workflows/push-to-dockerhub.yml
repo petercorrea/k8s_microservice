@@ -42,7 +42,8 @@ jobs:
 
       - name: Build and push Builder base image
         run: |
-          docker buildx build --push --tag pmcorrea/builder:latest --cache-from=type=local,src=/tmp/.buildx-cache --cache-to=type=local,dest=/tmp/.buildx-cache --file ./Dockerfile.base .
+          docker build -t pmcorrea/builder:latest -f ./Dockerfile.base .
+          docker push pmcorrea/builder:latest
         env:
           DOCKER_BUILDKIT: 1
 
@@ -51,7 +52,7 @@ jobs:
         run: |
           export TAG=staging
           echo "TAG=${TAG}" > .env
-          docker-compose -f docker-compose.staging.yml build --pull
+          docker-compose -f docker-compose.staging.yml build
           docker-compose -f docker-compose.staging.yml push
         env:
           IMAGE_TAG: $TAG
@@ -61,7 +62,7 @@ jobs:
         run: |
           export TAG=latest
           echo "TAG=${TAG}" > .env
-          docker-compose -f docker-compose.prod.yml build --pull
+          docker-compose -f docker-compose.prod.yml build
           docker-compose -f docker-compose.prod.yml push
         env:
           IMAGE_TAG: $TAG
